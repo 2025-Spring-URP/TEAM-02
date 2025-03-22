@@ -1,0 +1,1 @@
+${PCIE_HOME}/sim/sv/sverilog/PCIE_TOP_TB.sv
