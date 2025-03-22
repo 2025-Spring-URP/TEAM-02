@@ -10,7 +10,7 @@ RANDOM_SEED	= 0
 DUMP	?= off
 GUI	?= off
 
-STABLE_TC = PCIE_test
+STABLE_TC = pcie_test
 #STABLE_TC = pcie_sample_test
 DEVEL_TC = devel_test
 
