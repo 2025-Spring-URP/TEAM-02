@@ -15,10 +15,10 @@ suppress_message VER-26
 # ---------------------------------------
 # Source environment variables
 set env_map {}
-lappend env_map "\${CMSS_HOME}" $env(CMSS_HOME)
+lappend env_map "\${PCIE_HOME}" $env(PCIE_HOME)
 
 # parse the filelist and analyze
-set fp [open "$env(CMSS_HOME)/design/filelist.f" r]
+set fp [open "$env(PCIE_HOME)/design/filelist.f" r]
 set data [split [read $fp] "\n"]
 foreach line2 $data {
     global search_path

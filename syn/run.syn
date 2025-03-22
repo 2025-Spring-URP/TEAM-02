@@ -4,5 +4,5 @@
 \rm -rf work.syn
 mkdir work.syn
 cd work.syn
-dc_shell-xg-t < ${CMSS_HOME}/syn/UMC28.tcl
+dc_shell-xg-t < ${PCIE_HOME}/syn/UMC28.tcl
 cd ..
