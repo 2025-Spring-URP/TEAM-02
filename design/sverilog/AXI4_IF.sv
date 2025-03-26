@@ -13,7 +13,7 @@
 interface AXI4_A_IF
 #(
     parameter   ID_WIDTH                = 4,
-    parameter   ADDR_WIDTH              = 32
+    parameter   ADDR_WIDTH              = 64
 )
 (
     input   wire                        aclk,
