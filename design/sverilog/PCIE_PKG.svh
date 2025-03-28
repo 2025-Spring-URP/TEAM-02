@@ -136,6 +136,16 @@ package PCIE_PKG;
 
     endfunction   
 
+    // Completion 
+    typedef struct packed{
+
+    } cpl_hdr;
+
+    // Flow Control Packet Header       --> DLLP
+    typedef struct packed{
+
+    } fcp_hdr;
+    
 
     /* [Read Completion Boundary(RCB Check) & Completion MAX_PAYLOAD_SIZE Rule]
     * ---------------------------------------------------------------------------------
@@ -175,6 +185,11 @@ package PCIE_PKG;
         
     endfunction
 
+
+
+
+
     // synopsys translate_on
+
 
 endpackage
