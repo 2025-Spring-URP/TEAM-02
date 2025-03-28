@@ -3,6 +3,8 @@
 // Author: Jungrae Kim <dale40@gmail.com>
 // Description:
 
+// Version Update --> Gray Code?
+
 module SAL_FIFO
 #(
     parameter   int     DEPTH_LG2       = 4
@@ -138,7 +140,7 @@ module SAL_FIFO
     // synopsys translate_on
 
     generate
-        if (RDATA_FF_OUT) begin: rdata_timing_optimize
+        if (RDATA_FF_OUT) begin: rdata_timing_optimize                      // "WR Version"  Write is Priority than Read
             SAL_SDP_RAM
             #(
                 .DEPTH_LG2                      (DEPTH_LG2)
