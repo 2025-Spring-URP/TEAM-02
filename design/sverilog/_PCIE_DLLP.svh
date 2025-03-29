@@ -6,7 +6,10 @@
 
 package _PCIE_DLLP;
 
-    localparam ;
+    localparam NEXT_TRANSMIT_SEQ_BITS   = 12;               // Set 000h in DL_Inactive state
+    localparam ACKD_SEQ_BITS            = 12;               // Set to FFFh in DL_Inactive state
+
+    localparam REPLAY_NUM_BITS          = 2;                //  Set to 00b in DL_Inactive state
 
     // Flow Control Packet Header
     typedef struct packed{
@@ -16,6 +19,9 @@ package _PCIE_DLLP;
 
     // synopsys translation_off
 
+    // ----------------------------------------------------------------------------------------------------
+    //                    Flow Control Rule                                  | pg 
+    // -----------------------------------------------------------------------------------------------------
     /* Scaled Flow Control Rules(FCPE - Flow Control Protocol Error) (not yet) (pg 220)
     *  - If Scaled Flow Control is unsupported, then Header Credit < 127(max), Payload Credit < 2047(max)
     *  - If Scaled Flow Control is supported, then Header Credit < 
@@ -46,6 +52,10 @@ package _PCIE_DLLP;
         endfunction
     end
 
+
+    // ----------------------------------------------------------------------------------------------------
+    //                    LCRC and Sequence Number Rules (TLP Transmitter)   | pg 228
+    // -----------------------------------------------------------------------------------------------------
 
 
 
