@@ -22,8 +22,7 @@ package PCIE_PKG;
     * TODO:
     */
 
-    // Bit 단위의 연속적인 패킷을 만드는데 "packed" 명령어를 사용함. 1) 비트슬라이싱 가능 2) MSB부터 정렬됨
-    typedef struct packed {  
+    typedef struct packed {                                         // Bit 단위의 연속적인 패킷을 만드는데 "packed" 명령어를 사용함. 1) 비트슬라이싱 가능 2) MSB부터 정렬됨
         // Header 16B
         logic   [5:0]               addr_l;   
         logic   [1:0]               reserved;     
@@ -48,6 +47,7 @@ package PCIE_PKG;
         logic   [2:0]               fmt;  
         logic   [4:0]               tlp_type;
     } tlp_memory_req_hdr_t;
+
 
     // Generate TLP Memory Write Request Header
     function automatic tlp_memory_req_hdr_t gen_tlp_memwr_hdr(           //automatic을 통해 독립적으로 변수를 생성하여, 여러 프로세서 생성 시 독립적 동작 가능.

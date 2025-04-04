@@ -6,16 +6,138 @@
 
 package _PCIE_DLLP;
 
-    localparam NEXT_TRANSMIT_SEQ_BITS   = 12;               // Set 000h in DL_Inactive state
-    localparam ACKD_SEQ_BITS            = 12;               // Set to FFFh in DL_Inactive state
+    localparam NEXT_TRANSMIT_SEQ_BITS   = 12;                   // Set 000h in DL_Inactive state
+    localparam ACKD_SEQ_BITS            = 12;                   // Set to FFFh in DL_Inactive state
 
-    localparam REPLAY_NUM_BITS          = 2;                //  Set to 00b in DL_Inactive state
+    localparam REPLAY_NUM_BITS          = 2;                    //  Set to 00b in DL_Inactive state
 
     // Flow Control Packet Header
-    typedef struct packed{
+    /* ---------------------------------------
+    *    DLLP Type Encodings | pg 222
+    *    -------------------------------------
+    *    0x00           ACK
+    *    0x01           MRInit
+    *    0x02           Data_Link_Feature
+    *    0x10           NAK
+    *    0x20           PM_Enter L1
+    *    0x21           PM_Enter_L23
+    *    0x23           PM_Active_State_Requset_L1
+    *    0x24           PM_Request_Ack
+    *    0x30           Vendor-specific
+    *    0x31           NOP
+    *    -------------------------------------
+    *          vvv - VC ID
+    *    0100 0vvv   InitFC-P (v[2:0] specifies Virtual Channel)
+    *    0110 0vvv   InitFC1-NP
+    *    0110 0vvv   InitFC1-Cpl
+    *    0111 0vvv   MRInitFC1
+    *    1100 0vvv   InitFC2-P
+    *    1101 0vvv   InitFC2-NP
+    *    1110 0vvv   InitFC2-Cpl
+    *    1111 0vvv   MRInitFC2
+    *    1000 0vvv   UpdateFC-P
+    *    1001 0vvv   UpdateFC-NP
+    *    1010 0vvv   UpdateFC-Cpl
+    *    1011 0vvv   MRUpdateFC
+    *    All others - Reserved
+    *-------------------------------------------*/
 
-    } fcp_hdr;
+    typedef struct packed {                                // ACK & NAK Packet      
+        // Header 6B
+        logic   [15:0]              zeros;
+        logic   [15:0]              crc16;
 
+        logic   [7:0]               acknak_seq_num_l;
+        logic   [3:0]               reserved_l;
+        logic   [3:0]               acknak_seq_num_h;
+        logic   [7:0]               reserved_h;
+        logic   [7:0]               dllp_type;
+    } dllp_ACKNAK_packet_t;
+
+    typedef struct packed {                                 // NOP Packet                     
+        // Header 6B
+        logic   [15:0]              zeros;
+        logic   [15:0]              crc16;
+
+        logic   [23:0]              arbitrary_value;
+        logic   [7:0]               dllp_type;
+    } dllp_NOP_packet_t;
+
+    typedef struct packed {                                 // DLCMSM Packet : InitFC, UpdateFC  
+        // Header 6B
+        logic   [15:0]              zeros;
+        logic   [15:0]              crc16;
+
+        logic   [7:0]               dataFC_l;
+        logic   [1:0]               hdrFC_l;
+        logic   [1:0]               dataScale;
+        logic   [3:0]               dataFC_h;
+        logic   [1:0]               hdrScale;
+        logic   [5:0]               hdrFC_h;
+        logic   [7:0]               dllp_type;
+    } dllp_FC_packet_t;
+
+    function automatic dllp_packet_t gen_dllp_ACK(
+        input   logic   [11:0]      seq_num,
+        input   logic   [15:0]      crc16
+    );
+        dllp_ACKNAK_packet_t                dllp_ack_packet;
+        dllp_ack_packet.dllp_type                       = 'h00;         // ACK : 0000_0000
+        dllp_ack_packet.reserved_h                      = 'd0;          //Reserved
+        dllp_ack_packet.reserved_l                      = 'd0;          //Reserved
+        dllp_ack_packet.acknak_seq_num_h                = seq_num[11:8];
+        dllp_ack_packet.acknak_seq_num_l                = seq_num[7:0];
+        dllp_ack_packet.crc16                           = crc16;
+        dllp_ack_packet.zeros                           = 'd0;
+    endfunction
+
+    function automatic dllp_packet_t gen_dllp_NAK(
+        input   logic   [11:0]      seq_num,
+        input   logic   [15:0]      crc16
+    );
+        dllp_ACKNAK_packet_t       dllp_nak_packet;
+        dllp_nak_packet.dllp_type                       = 'h10;         // NAK : 0001_0000
+        dllp_nak_packet.reserved_h                      = 'd0;          //Reserved
+        dllp_nak_packet.reserved_l                      = 'd0;          //Reserved
+        dllp_nak_packet.acknak_seq_num_h                = seq_num[11:8];
+        dllp_nak_packet.acknak_seq_num_l                = seq_num[7:0];
+        dllp_nak_packet.crc16                           = crc16;
+        dllp_nak_packet.zeros                           = 'd0;
+    endfunction
+
+    function automatic dllp_packet_t gen_dllp_NOP(
+        input   logic   [23:0]      arbitrary_value,    // @ ?
+        input   logic   [15:0]      crc16
+    );
+        dllp_packet_t       dllp_nop_packet;
+        dllp_nop_packet.dllp_type                       = 'h31;         // NOP : 0011_0001
+        dllp_nop_packet.arbitrary_value                 = arbitrary_value;
+        dllp_nop_packet.crc16                           = crc16;
+        dllp_nop_packet.zeros                           = 'd0;
+    endfunction
+
+    function automatic dllp_FC_packet_t gen_dllp_FC_packet(
+        input   logic   [3:0]       ptype,              // P, NP, Cpl
+        input   logic   [2:0]       vcid,
+        input   logic   [1:0]       hdrScale,
+        input   logic   [7:0]       hdrFC,
+        input   logic   [1:0]       dataScale,
+        input   logic   [11:0]      dataFC,
+        input   logic   [15:0]      crc16
+    );
+        dllp_FC_packet_t           dllp_FC_packet;
+        dllp_FC_packet.dllp_type[7:4]              = ptype;
+        dllp_FC_packet.dllp_type[3]                = 0;
+        dllp_FC_packet.dllp_type[2:0]              = vcid;
+        dllp_FC_packet.hdrScale                    = hdrScale;
+        dllp_FC_packet.hdrFC_h                     = hdrFC[7:2];
+        dllp_FC_packet.hdrFC_l                     = hdrFC[1:0];
+        dllp_FC_packet.dataScale                   = dataScale;
+        dllp_FC_packet.dataFC_h                    = dataFC[11:8];
+        dllp_FC_packet.dataFC_l                    = dataFC[7:0];
+        dllp_FC_packet.crc16                       = crc16;
+        dllp_FC_packet.zeros                       = 'd0;
+    endfunction
 
     // synopsys translation_off
 

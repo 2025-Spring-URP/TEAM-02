@@ -26,6 +26,13 @@ class Dummy_Adder_EX;                                       // Constraint Random
   endfunction
 endclass
 
+class Random_Generate_Packet;
+
+  function void generate_MEMWR();
+    
+  endfunction
+
+endclass
 
 
 
