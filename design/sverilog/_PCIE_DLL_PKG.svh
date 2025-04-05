@@ -4,43 +4,16 @@
 
 // Follows PCIe gen5 specification 1.1
 
-package _PCIE_DLLP;
+`ifndef ____PCIE_DLL_PKG_SVH__
+`define ____PCIE_DLL_PKG_SVH__
+
+
+package _PCIE_DLL_PKG;
 
     localparam NEXT_TRANSMIT_SEQ_BITS   = 12;                   // Set 000h in DL_Inactive state
     localparam ACKD_SEQ_BITS            = 12;                   // Set to FFFh in DL_Inactive state
 
     localparam REPLAY_NUM_BITS          = 2;                    //  Set to 00b in DL_Inactive state
-
-    // Flow Control Packet Header
-    /* ---------------------------------------
-    *    DLLP Type Encodings | pg 222
-    *    -------------------------------------
-    *    0x00           ACK
-    *    0x01           MRInit
-    *    0x02           Data_Link_Feature
-    *    0x10           NAK
-    *    0x20           PM_Enter L1
-    *    0x21           PM_Enter_L23
-    *    0x23           PM_Active_State_Requset_L1
-    *    0x24           PM_Request_Ack
-    *    0x30           Vendor-specific
-    *    0x31           NOP
-    *    -------------------------------------
-    *          vvv - VC ID
-    *    0100 0vvv   InitFC-P (v[2:0] specifies Virtual Channel)
-    *    0110 0vvv   InitFC1-NP
-    *    0110 0vvv   InitFC1-Cpl
-    *    0111 0vvv   MRInitFC1
-    *    1100 0vvv   InitFC2-P
-    *    1101 0vvv   InitFC2-NP
-    *    1110 0vvv   InitFC2-Cpl
-    *    1111 0vvv   MRInitFC2
-    *    1000 0vvv   UpdateFC-P
-    *    1001 0vvv   UpdateFC-NP
-    *    1010 0vvv   UpdateFC-Cpl
-    *    1011 0vvv   MRUpdateFC
-    *    All others - Reserved
-    *-------------------------------------------*/
 
     typedef struct packed {                                // ACK & NAK Packet      
         // Header 6B
@@ -77,7 +50,44 @@ package _PCIE_DLLP;
         logic   [7:0]               dllp_type;
     } dllp_FC_packet_t;
 
-    function automatic dllp_packet_t gen_dllp_ACK(
+
+    // synopsys translation_off
+    // ----------------------------------------------------------------------------------------------------------------------------------------------------------------
+    //                                                                  For Verification
+    // ----------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+    // Flow Control Packet Header
+    /* ---------------------------------------
+    *    DLLP Type Encodings | pg 222
+    *    -------------------------------------
+    *    0x00           |  ACK
+    *    0x01           |  MRInit
+    *    0x02           |  Data_Link_Feature
+    *    0x10           |  NAK
+    *    0x20           |  PM_Enter L1
+    *    0x21           |  PM_Enter_L23
+    *    0x23           |  PM_Active_State_Requset_L1
+    *    0x24           |  PM_Request_Ack
+    *    0x30           |  Vendor-specific
+    *    0x31           |  NOP
+    *    ---------------+------------------------
+    *          vvv      |  Virtual Channel ID
+    *    0100_0vvv      |  InitFC-P (v[2:0] specifies Virtual Channel)
+    *    0110_0vvv      |  InitFC1-NP
+    *    0110_0vvv      |  InitFC1-Cpl
+    *    0111_0vvv      |  MRInitFC1
+    *    1100_0vvv      |  InitFC2-P
+    *    1101_0vvv      |  InitFC2-NP
+    *    1110_0vvv      |  InitFC2-Cpl
+    *    1111_0vvv      |  MRInitFC2
+    *    1000_0vvv      |  UpdateFC-P
+    *    1001_0vvv      |  UpdateFC-NP
+    *    1010_0vvv      |  UpdateFC-Cpl
+    *    1011_0vvv      |  MRUpdateFC
+    *    All others -   |  Reserved
+    *-------------------------------------------*/
+
+    function automatic dllp_ACKNAK_packet_t gen_dllp_ACK(
         input   logic   [11:0]      seq_num,
         input   logic   [15:0]      crc16
     );
@@ -91,7 +101,7 @@ package _PCIE_DLLP;
         dllp_ack_packet.zeros                           = 'd0;
     endfunction
 
-    function automatic dllp_packet_t gen_dllp_NAK(
+    function automatic dllp_ACKNAK_packet_t gen_dllp_NAK(
         input   logic   [11:0]      seq_num,
         input   logic   [15:0]      crc16
     );
@@ -105,11 +115,11 @@ package _PCIE_DLLP;
         dllp_nak_packet.zeros                           = 'd0;
     endfunction
 
-    function automatic dllp_packet_t gen_dllp_NOP(
+    function automatic dllp_NOP_packet_t gen_dllp_NOP(
         input   logic   [23:0]      arbitrary_value,    // @ ?
         input   logic   [15:0]      crc16
     );
-        dllp_packet_t       dllp_nop_packet;
+        dllp_NOP_packet_t       dllp_nop_packet;
         dllp_nop_packet.dllp_type                       = 'h31;         // NOP : 0011_0001
         dllp_nop_packet.arbitrary_value                 = arbitrary_value;
         dllp_nop_packet.crc16                           = crc16;
@@ -139,8 +149,6 @@ package _PCIE_DLLP;
         dllp_FC_packet.zeros                       = 'd0;
     endfunction
 
-    // synopsys translation_off
-
     // ----------------------------------------------------------------------------------------------------
     //                    Flow Control Rule                                  | pg 
     // -----------------------------------------------------------------------------------------------------
@@ -152,24 +160,24 @@ package _PCIE_DLLP;
         function automatic (
         
         );
-        hdr <= 127
-        payload <= 2047
+        hdr             <= 127
+        payload         <= 2047
             
         endfunction
     end else if (Scale_Factor == 2'b11) begin
         function automatic (
         
         );
-        hdr <= 509
-        payload <= 8188
+        hdr             <= 509
+        payload         <= 8188
 
         endfunction
     end else begin                     
         function automatic (
         
         );
-        hdr <= 2032
-        payload <= 32752
+        hdr             <= 2032
+        payload         <= 32752
 
         endfunction
     end
@@ -184,3 +192,5 @@ package _PCIE_DLLP;
     // synopsys translate_on
 
 endpackage
+
+`endif
