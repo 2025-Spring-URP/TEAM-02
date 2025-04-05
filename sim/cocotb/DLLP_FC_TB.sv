@@ -16,6 +16,15 @@ module DLLP_FC_TB();
 
     import PCIE_PKG::*;
 
+    // inject random seed
+    initial begin
+        $srandom(`RANDOM_SEED);
+    end
+
+
+    //----------------------------------------------------------
+    // Step 1) clock and reset generation
+    //----------------------------------------------------------
     reg                     pclk;
     reg                     preset_n;
 
@@ -30,7 +39,7 @@ module DLLP_FC_TB();
         pclk                    = 1'b0;
     end
     always begin
-        #1 pclk                 = ~pclk;  // 1ns 마다 토글 --> 2ns 주기 (500Hhz)
+        #1 pclk                 = ~pclk;  	// 1ns 마다 토글 --> 2ns 주기 (500Hhz)
     end
 
     // reset generation
@@ -41,38 +50,86 @@ module DLLP_FC_TB();
         preset_n                = 1'b1;      // release the reset
     end
 
-    // inject random seed
+    // enable waveform dump
     initial begin
-        $srandom(`RANDOM_SEED);
+        $dumpvars(0, u_DUT);
+        $dumpfile("dump.vcd");
     end
 
-    // Instantiate DUT
-    U_PCIE_DLLP PCIE_DLLP(
 
+    //----------------------------------------------------------
+    // Step 2) Connection between DUT and test modules
+    //----------------------------------------------------------
+
+	wire 	 [PIPE_DATA_WIDTH-1:0]		tlp_32B_w;
+
+    logic    [PIPE_DATA_WIDTH-1:0]  	pipe_d_RC2EP;       // PIPE Interface 32B Data INOUT
+    logic    [PIPE_DATA_WIDTH-1:0]  	pipe_d_EP2RC;       // logic - 4 state variable
+
+    DUT_PCIE_DLLP PCIE_DLLP
+	#(
+	
+	)
+	(
+		.sclk						(pclk)
+	  ,	.sreset_n  					(preset_n)
+
+	//	Data Link Layer Input
+	  ,	.tlp_i						(tlp_32B_w)				// Total Size : 32B x N th  
+
+	//	PCIE Fabric Link I/O
+	  , .pipe_data_i  				(pipe_d_EP2RC)			// EndPoint    --> RootComplex
+	  , .pipe_data_o				(pipe_d_RC2EP)			// RootComplex --> Endpoint
     );
-    
-    logic    [PIPE_DATA_WIDTH-1:0]  	pipe_d_i;       // PIPE Interface 32B Data INOUT
-    logic    [PIPE_DATA_WIDTH-1:0]  	pipe_d_o;       // logic - 4 state variable
-
-    // ------------------------------------------------------ GPT Coding ------------------------------
-
-    initial begin
-		tlp_packet_t 		pkt;
-        dllp_packet_t 		ack, nak;
-
-        wait (!rst);
-        
 
 
+    //----------------------------------------------------------
+    // Step 3) Testbench starts
+    //----------------------------------------------------------
+    task test_init();
+		
+        @(posedge rst_n);                   			// wait for a release of the reset
+        repeat (10) @(posedge clk);         			// wait another 10 cycles
 
-        
-        // TLP 전송
-        for (int i = 0; i < 4; i++) begin
-          pkt.seq_num = i;
-          send_tlp(pkt);
+
+        $display("---------------------------------------------------");
+        $display("Flow Control Test");
+        $display("---------------------------------------------------");
+
+        $display("---------------------------------------------------");
+        $display("Load data to memory");
+        $display("---------------------------------------------------");
+
+
+		// TLP(HDR + [Payload] + ECRC) is sent to DLL Layer (32B)
+        for (int i=0; i<`SRC_REGION_SIZE; i=i+4) begin
+            // send random data to DLL	(MemRd, MemWr, )
+            
+			// It should not be error
         end
 
-        #50;
+		// PIPE IF send to RC (32B 500Mhz) - TLP & DLLP(FC, NOP)
+		// It can be error! --> Make Error! : BER(Bit Error Rate) : 1600B 당 1bit Error를 만들어보자.
+		// SEQ(12b) + HDR(16B) + MAX_PAYLOAD(128B) + ECRC(4B) + LCRC(4B) == 160B
+		int unsigned rnd;
+		for () begin
+
+    		rnd = $urandom_range(0, 1279);  // 0~1279 중 하나
+
+		end
+    endtask 
+
+	
+
+	// Input TLP (automatically input MEMRd, MEMWR, )
+    initial begin
+
+
+		
+		test_init();
+
+
+		// Step 1) 
 
         // DLLP 응답 (NAK → Replay 발생 확인)
         nak.dllp_type = 'h10;
@@ -87,8 +144,8 @@ module DLLP_FC_TB();
         recv_dllp(ack);
 
         #50;
-
         $display("ACK: %0d, NAK: %0d", ack_count, nak_count);
+
         $finish;
     end
 

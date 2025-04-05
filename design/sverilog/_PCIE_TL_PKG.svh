@@ -9,7 +9,8 @@
 
 package _PCIE_TL_PKG;
 
-    typedef struct packed {                                         // Bit 단위의 연속적인 패킷을 만드는데 "packed" 명령어를 사용함. 1) 비트슬라이싱 가능 2) MSB부터 정렬됨
+    // Bit 단위의 연속적인 패킷을 만드는데 "packed" 명령어를 사용함. 1) 비트슬라이싱 가능 2) MSB부터 정렬됨
+    typedef struct packed {
         // Header 16B
         logic   [5:0]               addr_l;   
         logic   [1:0]               reserved;     
