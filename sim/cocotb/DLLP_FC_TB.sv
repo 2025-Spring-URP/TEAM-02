@@ -128,6 +128,10 @@ module DLLP_FC_TB();
 		
 		test_init();
 
+		Random_Generate_Packet packet[0:30];
+		packet[0] = new();
+		packet[0].send_rand_gen_tlp_memwr(0, pipe_d_EP2RC);  		// N clk 소요됨
+
 
 		// Step 1) 
 

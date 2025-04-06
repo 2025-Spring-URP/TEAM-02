@@ -34,6 +34,7 @@ package PCIE_VERIF_PKG;
         rand bit [9:0]                          tag;
 
         // Saved
+        logic                                   packet_type;        @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ 
         logic   [PIPE_DATA_WIDTH-1:0]           tlp[MAX_TLP_DEPTH];                   // SEQ + HDR | PAYLAOD | ECRC, LCRC
         
         constraint rules {
@@ -203,7 +204,6 @@ package PCIE_VERIF_PKG;
         );
         
         endtask
-
     endclass
 
     function automatic logic [31:0] gen_crc32(
