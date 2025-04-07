@@ -226,7 +226,9 @@ package PCIE_VERIF_PKG;
     // ----------------------------------------------------------
     //                  Make BER(Bit Error Rate)
     // ----------------------------------------------------------
-    task
+    task automatic inject_1bit_error(
+
+    );
 
     endtask
 
