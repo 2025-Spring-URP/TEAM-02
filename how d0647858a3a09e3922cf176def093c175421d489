@@ -1,0 +1,15 @@
+[33mcommit d0647858a3a09e3922cf176def093c175421d489[m[33m ([m[1;31morigin/cwg[m[33m)[m
+Author: skkuchoiwongi <cwg43352@g.skku.edu>
+Date:   Wed Mar 26 12:30:02 2025 +0900
+
+    add a
+
+[1mdiff --git a/README_CWG.md b/README_CWG.md[m
+[1mindex 41dfcb2..7727ec4 100644[m
+[1m--- a/README_CWG.md[m
+[1m+++ b/README_CWG.md[m
+[36m@@ -1 +1 @@[m
+[31m-helloa[m
+\ No newline at end of file[m
+[32m+[m[32mhelloaaaaaaaaaaaaa[m
+\ No newline at end of file[m
