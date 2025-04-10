@@ -1,9 +1,12 @@
 // Receive_TLP_FIFO!
 
-module DLL_TOP (
-
-	input   wire                clk,
-    input   wire                rst_n,
+module DLL_TOP
+#(
+    parameter int               PIPE_DATA_WIDTH   =   256
+)
+(
+	input   wire                sclk,
+    input   wire                srst_n,
 
 	// TL의 Credit 정보
     input 	wire	[3:0]		cc_p_h_i,		    // Posted(Write) header credit consumed
@@ -17,31 +20,59 @@ module DLL_TOP (
     input 	wire	[3:0]		cc_cpl_d_i,	        // Completion credit data consumed
 
 	// TL -> DLL
-	input 	wire	[255:0]		tl2dll_data_i, 		// TL로부터 받은 TLP 조각들
+	input 	wire	[PIPE_DATA_WIDTH-1:0]		tl2dll_data_i, 		// TL로부터 받은 TLP 조각들
     output  wire                dll2tl_ready_o,     // TL에게 "retry buffer에 자리 있으니까 TLP 보내도 돼"라는 신호
 
 	// DLL -> TL
-	output  wire	[255:0]		dll2tl_data_o,		// TL에게 보내는 TLP 조각들
+	output  wire	[PIPE_DATA_WIDTH-1:0]		dll2tl_data_o,		// TL에게 보내는 TLP 조각들
     output  wire                dll2tl_en_o,        // TL에게 "나 지금 TLP 보낼게"라는 신호
 
-	// DLL -> EP
-	input	wire	[255:0]		pipe2dll_data_i, 	// EP로부터 받은 TLP, DLLP 조각들
-
 	// EP -> DLL
-	output	wire	[255:0]		dll2pipe_data_o, 	// EP에게 보내는 TLP, DLLP 조각들
+	input	wire	[PIPE_DATA_WIDTH-1:0]		pipe2dll_data_i, 	// EP로부터 받은 TLP, DLLP 조각들
+
+	// DLL -> EP
+	output	wire	[PIPE_DATA_WIDTH-1:0]		dll2pipe_data_o 	// EP에게 보내는 TLP, DLLP 조각들
 );
 
-	reg [1:0] dlcm_state;
+wire crc_run_w;
+wire    [PIPE_DATA_WIDTH-1:0]   bypass_data_w;
+reg     [PIPE_DATA_WIDTH-1:0]   tlp_32B_buffer;
 
-	_DLL_DLCMSM   dlcmsm
-    (
-        .clk                        (clk),
-        .rst_n                      (rst_n),
-		.link_up_i					(ep_link_up_i),
-		.state_o					(dlcm_state)
-    );
+always@ (posedge sclk) begin
+    if (!srst_n) begin
+        tlp_32B_buffer <= 'd0;
+    end
+    else begin
+        tlp_32B_buffer <= bypass_data_w;
+    end
+end
+
+_DLL_Packtizer packetizer
+#(
+    .PIPE_DATA_WIDTH            (PIPE_DATA_WIDTH)
+)
+(
+    .sclk                       (sclk),
+    .srst_n                     (srst_n),
+    .data_i                     (tl2dll_data_i)
+
+    .data_o                     (bypass_data_w),
+    .crc_run_o                  (crc_run_w)
+);
+
+reg [1:0] dlcm_state;
+
+_DLL_DLCMSM   dlcmsm
+(
+    .sclk                        (sclk),
+    .srst_n                      (srst_n),
+    .link_up_i					(ep_link_up_i),
+    .state_o					(dlcm_state)
+);
+
+    
 
 	
-	
+	//assign dll2tl_ready_o = crc_run & 버퍼 자리 있음;
 
 endmodule
