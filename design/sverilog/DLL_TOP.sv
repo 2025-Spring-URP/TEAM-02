@@ -19,7 +19,7 @@ module DLL_TOP (
 
 	// EP -> DLL (송신)
 	output	wire	[255:0]		ep_data_o, 		// EP에게 보내는 TLP, DLLP 조각들
-	input 	wire 				ep_link_up_i, 	// EP가 연결되면 활성화되는 신호 (DLCMSM이 시작할 수 있도록 trigger)
+	input 	wire 				ep_link_up_i 	// EP가 연결되면 활성화되는 신호 (DLCMSM이 시작할 수 있도록 trigger)
 );
 
 	reg [1:0] dlcmsm_state;
