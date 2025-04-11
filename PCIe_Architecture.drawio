@@ -382,8 +382,8 @@
         <mxCell id="UeodE547vRp8baXrZSc2-38" value="&lt;font style=&quot;font-size: 12px;&quot;&gt;data_d_reg&lt;/font&gt;" style="text;strokeColor=none;fillColor=none;html=1;fontSize=24;fontStyle=1;verticalAlign=middle;align=center;" vertex="1" parent="1">
           <mxGeometry x="2700" y="126.71000000000001" width="80" height="30" as="geometry" />
         </mxCell>
-        <mxCell id="UeodE547vRp8baXrZSc2-49" value="CRC32" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
-          <mxGeometry x="3170" y="10" width="120" height="90" as="geometry" />
+        <mxCell id="UeodE547vRp8baXrZSc2-49" value="CRC32&lt;br&gt;1clk_delay" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="3188" y="10" width="120" height="90" as="geometry" />
         </mxCell>
         <mxCell id="UeodE547vRp8baXrZSc2-51" value="" style="shape=table;startSize=0;container=1;collapsible=0;childLayout=tableLayout;fontSize=16;" vertex="1" parent="1">
           <mxGeometry x="2780" y="260" width="330" height="570" as="geometry" />
