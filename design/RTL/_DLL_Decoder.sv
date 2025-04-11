@@ -28,16 +28,6 @@ module _DLL_Decoder
     // -------------------------------------------------------
     //              Transaction Layer
     // -------------------------------------------------------
-    // From Transaciton Layer : Credit Consumed
-    input   wire     [CREDIT_DEPTH-1:0]             rc_cc_p_h_i,
-    input   wire     [CREDIT_DEPTH-1:0]             rc_cc_p_d_i,
-
-    input   wire     [CREDIT_DEPTH-1:0]             rc_cc_np_h_i,
-    input   wire     [CREDIT_DEPTH-1:0]             rc_cc_np_d_i,
-
-    input   wire     [CREDIT_DEPTH-1:0]             rc_cc_cpl_h_i,
-    input   wire     [CREDIT_DEPTH-1:0]             rc_cc_cpld_d_i,
-
     // To Transaction Layer
     output  wire     [PIPE_DATA_WIDTH-1:0]          dll2tl_data_o,
     output  wire                                    dll2tl_data_en_o,

@@ -1,16 +1,17 @@
-module _DLL_DLCMSM (
-	input	wire 	clk,
-	input 	wire 	rst_n,
-	
-	// PIPE Interface
-	input 	wire  	link_up_i,
+module _DLL_DLCMSM 
+#(
+)
+(
+   input   wire    		ssclk,
+   input   wire    		srst_n,
 
-	// DLLP Generator
-	input 	wire	init1_end_i,
-	input	wire	init2_end_i,
+   // DLLP Generator
+   input   wire   		init1_end_i,		// 밖에서 AND해서 들어옴
+   input   wire   		init2_end_i,
 
-	// Many Modules
-	output 	wire 	state_o 
+   // Many Modules
+   output	wire		link_up_o;
+   output   wire    	DLCM_state_o 
 );
 
 localparam              S_INACTIVE = 3'd0,
@@ -18,8 +19,7 @@ localparam              S_INACTIVE = 3'd0,
                         S_INIT2    = 3'd2,
                         S_ACTIVE   = 3'd3;
 
-reg 	[1:0]			state, state_n;
-reg 					link_up
+reg    [1:0]         state, state_n;
 
 always_ff @(posedge clk) begin
     if (!rst_n) begin
@@ -31,31 +31,40 @@ always_ff @(posedge clk) begin
 end
 
 always_comb begin
-	state_n					= state;
+   state_n               = state;
 
-	case (state)
-		S_INACTIVE: begin
-			if (rst_n) begin
-               state_n = S_INIT1;
+   case (state)
+      S_INACTIVE: begin
+         if (rst_n) begin
+            state_n = S_INIT1;
             end
-		end
+         else begin
+            state_n = S_INACTIVE;
+         end
+      end
 
-		S_INIT1: begin
-			if (init1_end_i) begin
-               state_n = S_INIT2;
+      S_INIT1: begin
+         if (init1_end_i) begin
+                state_n = S_INIT2;
             end
-		end
+         else begin
+            state_n = S_INIT1;
+         end
+      end
 
-		S_INIT2: begin
-			if (init2_end_i) begin
-				state_n = S_ACTIVE;
-			end
-		end
+      S_INIT2: begin
+         if (init2_end_i) begin
+            state_n = S_ACTIVE;
+         end
+         begin
+            state_n = S_INIT2;
+         end
+      end
 
-		S_ACTIVE: begin
-		
-		end
-	endcase
+      S_ACTIVE: begin
+         state_n = S_ACTIVE;
+      end
+   endcase
 end
 
 assign state_o = state;

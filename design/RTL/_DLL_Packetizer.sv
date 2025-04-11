@@ -11,10 +11,13 @@ module _DLL_Packetizer
     input   wire                                sclk,
     input   wire                                srst_n,
 
+    // TL
     input   wire  [PIPE_DATA_WIDTH-1:0]         data_i,
-    output  wire  [PIPE_DATA_WIDTH-1:0]         data_o,
+    output  wire                                crc_run_o, 
 
-    output  wire                                crc_run_o,      
+    // Retry Montior
+    output  wire  [PIPE_DATA_WIDTH-1:0]         data_o,
+    output  wire                                wren_o,
 
 );
 
