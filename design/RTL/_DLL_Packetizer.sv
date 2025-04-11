@@ -5,7 +5,7 @@
 
 module _DLL_Packetizer
 #(
-    parameter  int  PIPE_DATA_WIDTH          = 256,
+    parameter  int  PIPE_DATA_WIDTH          = 256
 )
 (
     input   wire                                sclk,
@@ -15,10 +15,14 @@ module _DLL_Packetizer
     input   wire  [PIPE_DATA_WIDTH-1:0]         data_i,
     output  wire                                crc_run_o, 
 
+<<<<<<< HEAD
     // Retry Montior
     output  wire  [PIPE_DATA_WIDTH-1:0]         data_o,
     output  wire                                wren_o,
 
+=======
+    output  wire                                crc_run_o       
+>>>>>>> 25c18242fa4ac963362bbd263c482c10793f5cd7
 );
 
 reg [PIPE_DATA_WIDTH-1:0]           data_d;
@@ -29,7 +33,7 @@ localparam          S_IDLE      = 2'b00,        // crc_run_o = 0;
                     S_CRC_RUN   = 2'b01,        // crc_run_o = 1;
                     S_DONE      = 2'b11;        // crc_run_o = 1;
 
-always_ff @(posedge clk) begin
+always_ff @(posedge sclk) begin
     if (!srst_n) begin
 
     end
