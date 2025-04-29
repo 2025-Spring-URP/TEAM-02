@@ -14,7 +14,6 @@ module DLL_TOP
 
 	input 	wire	[3:0]		                cc_np_h_i,		    // Non-Posted(Read) header credit consumed
     input 	wire	[3:0]		                cc_np_d_i,		    // Non-Posted(Read) data credit consumed
-	
 
 	input 	wire	[3:0]		                cc_cpl_h_i,	        // Completion credit header consumed
     input 	wire	[3:0]		                cc_cpl_d_i,	        // Completion credit data consumed
@@ -31,10 +30,10 @@ module DLL_TOP
 	input	wire	[PIPE_DATA_WIDTH-1:0]		pipe2dll_data_i, 	// EP로부터 받은 TLP, DLLP 조각들
 
 	// DLL -> PIPE
-	output	wire	[PIPE_DATA_WIDTH-1:0]		dll2pipe_data_o 	// EP에게 보내는 TLP, DLLP 조각들
+	output	wire	[PIPE_DATA_WIDTH-1:0]		dll2pipe_data_o, 	// EP에게 보내는 TLP, DLLP 조각들
 
     // Many Modules
-    output  wire                                link_up_o,
+    output  wire                                link_up_o
 );
 
 wire                            crc_run_w;       // Packetizer의 동작 여부를 나타내는 신호

@@ -15,14 +15,10 @@ module _DLL_Packetizer
     input   wire  [PIPE_DATA_WIDTH-1:0]         data_i,
     output  wire                                crc_run_o, 
 
-<<<<<<< HEAD
     // Retry Montior
     output  wire  [PIPE_DATA_WIDTH-1:0]         data_o,
-    output  wire                                wren_o,
+    output  wire                                wren_o
 
-=======
-    output  wire                                crc_run_o       
->>>>>>> 25c18242fa4ac963362bbd263c482c10793f5cd7
 );
 
 reg [PIPE_DATA_WIDTH-1:0]           data_d;

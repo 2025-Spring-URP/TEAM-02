@@ -17,7 +17,6 @@ package _PCIE_DLL_PKG;
 
     typedef struct packed {                                // ACK & NAK Packet      
         // Header 6B
-        logic   [15:0]              zeros;
         logic   [15:0]              crc16;
 
         logic   [7:0]               acknak_seq_num_l;
@@ -27,18 +26,8 @@ package _PCIE_DLL_PKG;
         logic   [7:0]               dllp_type;
     } dllp_ACKNAK_packet_t;
 
-    typedef struct packed {                                 // NOP Packet                     
-        // Header 6B
-        logic   [15:0]              zeros;
-        logic   [15:0]              crc16;
-
-        logic   [23:0]              arbitrary_value;
-        logic   [7:0]               dllp_type;
-    } dllp_NOP_packet_t;
-
     typedef struct packed {                                 // DLCMSM Packet : InitFC, UpdateFC  
         // Header 6B
-        logic   [15:0]              zeros;
         logic   [15:0]              crc16;
 
         logic   [7:0]               dataFC_l;
@@ -98,7 +87,8 @@ package _PCIE_DLL_PKG;
         dllp_ack_packet.acknak_seq_num_h                = seq_num[11:8];
         dllp_ack_packet.acknak_seq_num_l                = seq_num[7:0];
         dllp_ack_packet.crc16                           = crc16;
-        dllp_ack_packet.zeros                           = 'd0;
+
+        return dllp_ack_packet;
     endfunction
 
     function automatic dllp_ACKNAK_packet_t gen_dllp_NAK(
@@ -112,7 +102,8 @@ package _PCIE_DLL_PKG;
         dllp_nak_packet.acknak_seq_num_h                = seq_num[11:8];
         dllp_nak_packet.acknak_seq_num_l                = seq_num[7:0];
         dllp_nak_packet.crc16                           = crc16;
-        dllp_nak_packet.zeros                           = 'd0;
+
+        return dllp_nak_packet;
     endfunction
 
     function automatic dllp_NOP_packet_t gen_dllp_NOP(
@@ -123,7 +114,6 @@ package _PCIE_DLL_PKG;
         dllp_nop_packet.dllp_type                       = 'h31;         // NOP : 0011_0001
         dllp_nop_packet.arbitrary_value                 = arbitrary_value;
         dllp_nop_packet.crc16                           = crc16;
-        dllp_nop_packet.zeros                           = 'd0;
     endfunction
 
     function automatic dllp_FC_packet_t gen_dllp_FC_packet(
@@ -146,9 +136,19 @@ package _PCIE_DLL_PKG;
         dllp_FC_packet.dataFC_h                    = dataFC[11:8];
         dllp_FC_packet.dataFC_l                    = dataFC[7:0];
         dllp_FC_packet.crc16                       = crc16;
-        dllp_FC_packet.zeros                       = 'd0;
+
+        return dllp_FC_packet;
     endfunction
 
+    function automatic dllp_FC_packet_t insert_crc16(
+        input dllp_FC_packet_t raw_packet,
+        input logic [15:0]      crc
+    );
+        dllp_FC_packet_t final_packet = raw_packet;
+        final_packet.crc16 = crc;
+
+        return final_packet;
+    endfunction
     // ----------------------------------------------------------------------------------------------------
     //                    Flow Control Rule                                  | pg 
     // -----------------------------------------------------------------------------------------------------
