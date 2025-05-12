@@ -1,4 +1,6 @@
 # TEAM-02
+## 진행상황
+임용성:
 ## TestBench
 - **How to use**
   - Make sure your SSH terminal supports remote GUI functionality.
