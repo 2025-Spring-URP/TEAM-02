@@ -1,4 +1,8 @@
 # TEAM-02
+## 질문거리
+1. compile, synthesis <-- make file
+2. FPGA
+3. 
 ## 진행상황
 임용성:
 ## TestBench
