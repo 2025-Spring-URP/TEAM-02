@@ -4,8 +4,12 @@
 2. FPGA
 3. 
 ## 진행상황
-임용성:
-이승로: DLCMSM, DLLP generator, Decoder(dllp 부분만 설계함) / 테스트벤치 or 합성은 아직 진행X
+<TL>
+1. 김주성:
+2. 최원기:
+<DLL>
+1. 임용성:
+2. 이승로: DLCMSM, DLLP generator, Decoder(dllp 부분만 설계함) / 테스트벤치 or 합성은 아직 진행X
 ## TestBench
 - **How to use**
   - Make sure your SSH terminal supports remote GUI functionality.
