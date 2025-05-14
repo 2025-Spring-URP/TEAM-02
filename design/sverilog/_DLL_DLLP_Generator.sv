@@ -5,12 +5,12 @@ module _DLL_DLLP_Generator
 #(
     parameter   PIPE_DATA_WIDTH             = 256,
     parameter   SEQ_BITS                    = 12,
-    parameter   CREDIT_LIMIT_P_HEADER       = 4,
-    parameter   CREDIT_LIMIT_P_DATA         = 4,
-    parameter   CREDIT_LIMIT_NP_HEADER      = 4,
-    parameter   CREDIT_LIMIT_NP_DATA        = 4,
-    parameter   CREDIT_LIMIT_CPL_HEADER     = 4,
-    parameter   CREDIT_LIMIT_CPL_DATA       = 4
+    parameter   CREDIT_LIMIT_P_HEADER       = 16,
+    parameter   CREDIT_LIMIT_P_DATA         = 16,
+    parameter   CREDIT_LIMIT_NP_HEADER      = 16,
+    parameter   CREDIT_LIMIT_NP_DATA        = 16,
+    parameter   CREDIT_LIMIT_CPL_HEADER     = 16,
+    parameter   CREDIT_LIMIT_CPL_DATA       = 16
 )
 (
     input   wire                                    sclk,
@@ -23,12 +23,12 @@ module _DLL_DLLP_Generator
     output  wire                                    init2_send_o,           // init2 dllp 3개 다 보내면 1로 활성화
 
     // Transaction Layer
-    input 	wire	[3:0]		                    cc_p_h_i,		        // Posted(Write) header credit consumed
-    input 	wire	[3:0]		                    cc_p_d_i,		        // Posted(Write) data credit consumed
-	input 	wire	[3:0]		                    cc_np_h_i,		        // Non-Posted(Read) header credit consumed
-    input 	wire	[3:0]		                    cc_np_d_i,		        // Non-Posted(Read) data credit consumed
-	input 	wire	[3:0]		                    cc_cpl_h_i,	            // Completion credit header consumed
-    input 	wire	[3:0]		                    cc_cpl_d_i,	            // Completion credit data consumed
+    input 	wire	[11:0]		                    cc_p_h_i,		        // Posted(Write) header credit consumed
+    input 	wire	[11:0]		                    cc_p_d_i,		        // Posted(Write) data credit consumed
+	input 	wire	[11:0]		                    cc_np_h_i,		        // Non-Posted(Read) header credit consumed
+    input 	wire	[11:0]		                    cc_np_d_i,		        // Non-Posted(Read) data credit consumed
+	input 	wire	[11:0]		                    cc_cpl_h_i,	            // Completion credit header consumed
+    input 	wire	[11:0]		                    cc_cpl_d_i,	            // Completion credit data consumed
 
     // Decoder
     input   wire                                    NAK_scheduled_i,        // CRC에러/SEQ에러 감지하면 1로 활성화돼서 들어옴
@@ -36,7 +36,10 @@ module _DLL_DLLP_Generator
 
     // PIPE
     output  wire    [PIPE_DATA_WIDTH-1:0]           dllp_data_o,            // 버퍼에게 보내는 32바이트짜리 DLLP 조각
-    output  wire                                    dllp_valid_o            // 버퍼에게 보낼게 하는 신호호
+    output  wire                                    dllp_valid_o,            // 버퍼에게 보낼게 하는 신호
+
+    //Arbitor
+    input   wire                                    arb_ready_i
 );
 
 // 여기서 만들어야 할 DLLP는 INIT1, INIT2, UpdateFC, ACK, NAK
@@ -141,7 +144,9 @@ always_comb begin
         S_INIT1_SEND_P: begin
             init1_dllp_valid             = 1'b1;
             init1_dllp_data              = {192'd0, init1_p_dllp, 16'hACF0};
-            init1_state_n                = S_INIT1_CRC_NP;
+            if (arb_ready_i) begin
+                init1_state_n                = S_INIT1_CRC_NP;
+            end
         end
         S_INIT1_CRC_NP: begin
             if (!init1_send) begin
@@ -159,7 +164,9 @@ always_comb begin
         S_INIT1_SEND_NP: begin
             init1_dllp_valid             = 1'b1;
             init1_dllp_data              = {192'd0, init1_np_dllp, 16'hACF0};
-            init1_state_n                = S_INIT1_CRC_CPL;
+            if (arb_ready_i) begin
+                init1_state_n                = S_INIT1_CRC_CPL;
+            end
         end
         S_INIT1_CRC_CPL: begin
             if (!init1_send) begin
@@ -177,11 +184,13 @@ always_comb begin
         S_INIT1_SEND_CPL: begin
             init1_dllp_valid             = 1'b1;
             init1_dllp_data              = {128'd0, init1_cpl_dllp, 16'hACF0};
-            init1_state_n                = S_INIT1_WAIT;
+            if (arb_ready_i) begin
+                init1_state_n                = S_INIT1_WAIT;
+            end
         end
         S_INIT1_WAIT: begin
             init1_send_n                 = 1'b1;
-            if (init1_cnt == 15'd10000) begin
+            if (init1_cnt == 'd100) begin
                 init1_state_n            = S_INIT1_SEND_P;
                 init1_cnt_n              = 15'd0;
             end
@@ -293,7 +302,9 @@ always_comb begin
         S_INIT2_SEND_P: begin
             init2_dllp_valid             = 1'b1;
             init2_dllp_data              = {192'd0, init2_p_dllp, 16'hACF0};
-            init2_state_n                = S_INIT2_CRC_NP;
+            if (arb_ready_i) begin
+                init2_state_n                = S_INIT2_CRC_NP;
+            end
         end
         S_INIT2_CRC_NP: begin
             if (!init2_send) begin
@@ -311,7 +322,9 @@ always_comb begin
         S_INIT2_SEND_NP: begin
             init2_dllp_valid             = 1'b1;
             init2_dllp_data              = {192'd0, init2_np_dllp, 16'hACF0};
-            init2_state_n                = S_INIT2_CRC_CPL;
+            if (arb_ready_i) begin
+                init2_state_n                = S_INIT2_CRC_CPL;
+            end
         end
         S_INIT2_CRC_CPL: begin
             if (!init2_send) begin
@@ -329,11 +342,13 @@ always_comb begin
         S_INIT2_SEND_CPL: begin
             init2_dllp_valid             = 1'b1;
             init2_dllp_data              = {128'd0, init2_cpl_dllp, 16'hACF0};
-            init2_state_n                = S_INIT2_WAIT;
+            if (arb_ready_i) begin
+                init2_state_n                = S_INIT2_WAIT;
+            end
         end
         S_INIT2_WAIT: begin
             init2_send_n                 = 1'b1;
-            if (init2_cnt == 15'd10000) begin
+            if (init2_cnt == 'd100) begin
                 init2_state_n            = S_INIT2_SEND_P;
                 init2_cnt_n              = 15'd0;
             end
@@ -417,19 +432,19 @@ always_comb begin
 
                 active_updatefc_np_dllp.crc16      = 16'd0;
                 active_updatefc_np_dllp.dllp_type  = 8'b1001_0000;
-                active_updatefc_np_dllp.hdrFC_h    = cc_p_h_i[7:2];
-                active_updatefc_np_dllp.hdrFC_l    = cc_p_h_i[1:0];
-                active_updatefc_np_dllp.dataFC_h   = cc_p_d_i[11:8];
-                active_updatefc_np_dllp.dataFC_l   = cc_p_d_i[7:0];
+                active_updatefc_np_dllp.hdrFC_h    = cc_np_h_i[7:2];
+                active_updatefc_np_dllp.hdrFC_l    = cc_np_h_i[1:0];
+                active_updatefc_np_dllp.dataFC_h   = cc_np_d_i[11:8];
+                active_updatefc_np_dllp.dataFC_l   = cc_np_d_i[7:0];
                 active_updatefc_np_dllp.hdrScale   = 2'b00;
                 active_updatefc_np_dllp.dataScale  = 2'b00;
 
                 active_updatefc_cpl_dllp.crc16      = 16'd0;
-                active_updatefc_clp_dllp.dllp_type  = 8'b1010_0000;
-                active_updatefc_cpl_dllp.hdrFC_h    = cc_p_h_i[7:2];
-                active_updatefc_cpl_dllp.hdrFC_l    = cc_p_h_i[1:0];
-                active_updatefc_cpl_dllp.dataFC_h   = cc_p_d_i[11:8];
-                active_updatefc_cpl_dllp.dataFC_l   = cc_p_d_i[7:0];
+                active_updatefc_cpl_dllp.dllp_type  = 8'b1010_0000;
+                active_updatefc_cpl_dllp.hdrFC_h    = cc_cpl_h_i[7:2];
+                active_updatefc_cpl_dllp.hdrFC_l    = cc_cpl_h_i[1:0];
+                active_updatefc_cpl_dllp.dataFC_h   = cc_cpl_d_i[11:8];
+                active_updatefc_cpl_dllp.dataFC_l   = cc_cpl_d_i[7:0];
                 active_updatefc_cpl_dllp.hdrScale   = 2'b00;
                 active_updatefc_cpl_dllp.dataScale  = 2'b00;
 
@@ -453,7 +468,9 @@ always_comb begin
         S_ACTIVE_SEND_FC_P: begin
             active_dllp_valid             = 1'b1;
             active_dllp_data              = {192'd0, active_updatefc_p_dllp, 16'hACF0};
-            active_state_n                = S_ACTIVE_CRC_FC_NP;
+            if (arb_ready_i) begin
+                active_state_n                = S_ACTIVE_CRC_FC_NP;
+            end
         end
         S_ACTIVE_CRC_FC_NP: begin
             active_crc_input              = active_updatefc_np_dllp[31:0];
@@ -469,7 +486,9 @@ always_comb begin
         S_ACTIVE_SEND_FC_NP: begin
             active_dllp_valid             = 1'b1;
             active_dllp_data              = {192'd0, active_updatefc_np_dllp, 16'hACF0};
-            active_state_n                = S_ACTIVE_CRC_FC_CPL;
+            if (arb_ready_i) begin
+                active_state_n                = S_ACTIVE_CRC_FC_CPL;
+            end
         end
         S_ACTIVE_CRC_FC_CPL: begin
             active_crc_input              = active_updatefc_cpl_dllp[31:0];
@@ -485,7 +504,9 @@ always_comb begin
         S_ACTIVE_SEND_FC_CPL: begin
             active_dllp_valid             = 1'b1;
             active_dllp_data              = {192'd0, active_updatefc_cpl_dllp, 16'hACF0};
-            active_state_n                = S_ACTIVE_CRC_AN;
+            if (arb_ready_i) begin
+                active_state_n                = S_ACTIVE_CRC_AN;
+            end
         end
         S_ACTIVE_CRC_AN: begin
             active_crc_input              = active_acknak_dllp[31:0];
@@ -501,10 +522,12 @@ always_comb begin
         S_ACTIVE_SEND_AN: begin
             active_dllp_valid             = 1'b1;
             active_dllp_data              = {192'd0, active_acknak_dllp, 16'hACF0};
-            active_state_n                = S_ACTIVE_WAIT;
+            if (arb_ready_i) begin
+                active_state_n                = S_ACTIVE_WAIT;
+            end
         end
         S_ACTIVE_WAIT: begin
-            if (active_cnt == 15'd10000) begin
+            if (active_cnt == 'd100) begin
                 active_state_n            = S_ACTIVE_IDLE;
                 active_cnt_n              = 15'd0;
             end
