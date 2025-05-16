@@ -1,0 +1,3 @@
+[submodule "sim/cocotb_pcie"]
+	path = sim/cocotb_pcie
+	url = https://github.com/2025-Spring-URP/cocotb_pcie.git
