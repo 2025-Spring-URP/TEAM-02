@@ -186,7 +186,7 @@
   - Linux CLI mode:
     ```
     $ source env.source
-    $ cd sim/cocotb_pcie/
+    $ cd sim/cocotb_pcie/test/
     $ make clean
     $ make
     ```
