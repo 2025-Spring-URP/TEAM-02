@@ -6,7 +6,9 @@ module TL_AXI_SLAVE #(
     parameter AXI_ADDR_WIDTH   = 64,
     parameter MAX_READ_REQ_SIZE = 512,
     parameter MAX_PAYLOAD_SIZE = 128,
-    parameter RX_DEPTH_LG2 = 4
+    parameter READ_COMPLETION_BOUNDARY = 128,
+    parameter RX_DEPTH_LG2 = 4,
+    parameter TX_DEPTH_LG2 = 3
 )
 (
     input   wire            clk,
@@ -87,116 +89,39 @@ module TL_AXI_SLAVE #(
 
 
 
-    localparam TAG_WIDTH = 256;
+    localparam TAG_WIDTH = 64;
     localparam TAG_BIT = $clog2(TAG_WIDTH);
 
     wire            p_hdr_full;
+    wire            p_hdr_wren;
     wire [31:0]     p_hdr_debug;
+
     wire            p_data_full;
+    wire            p_data_wren;
     wire [31:0]     p_data_debug;
+
     wire            np_hdr_full;
     wire [31:0]     np_hdr_debug;
+
     wire            cpl_hdr_empty;
     wire [31:0]     cpl_hdr_debug;
+
     wire            cpl_data_empty;
     wire [31:0]     cpl_data_debug;
 
     // ************ Memory Write Packer ************
-    typedef enum logic [2:0] {
-        IDLE,
-        WDATA,
-        WRESP
-    } wstate_t;
-    wstate_t wstate, wstate_n;
 
-    // AXI Burst Transfer Control
-    logic [7:0] wcnt, wcnt_n;
-    logic [AXI_ID_WIDTH-1:0] write_id, write_id_n;
-    logic p_hdr_wren, p_data_wren;
-    logic awready, wready, bvalid;
-
-    // Available TL P count
-    logic [4:0] preq_cnt, preq_cnt_n;
-
-    always_ff @(posedge clk)
-        if (!rst_n) begin
-            wstate <= IDLE;
-            wcnt <= 8'd0;
-            write_id <= 'd0;
-        end
-        else begin
-            wstate <= wstate_n;
-            wcnt <= wcnt_n;
-            write_id <= write_id_n;
-        end
-    
-    always_comb begin : aw_to_memwr_req
-        wstate_n = wstate;
-        wcnt_n = wcnt;
-        write_id_n = write_id;
-
-        awready = 1'b0;
-        wready = 1'b0;
-        bvalid = 1'b0;
-        p_hdr_wren = 1'b0;
-        p_data_wren = 1'b0;
-
-        case (wstate)
-        IDLE: begin
-            if (!p_hdr_full) begin
-                awready = 1'b1;
-            end
-
-            if (aw_if.avalid & ~p_hdr_full) begin
-                wstate_n = WDATA;
-                p_hdr_wren = 1'b1;
-
-                wcnt_n = aw_if.alen;
-                wid_n = aw_if.aid;
-            end
-        end
-        WDATA: begin
-            if (!p_data_full) begin
-                wready = 1'b1;
-            end
-
-            if (w_if.wvalid & ~p_data_full) begin
-                p_data_wren = 1'b1;
-                wcnt_n = wcnt - 1;
-
-                if (w_if.wlast/* | (w_if.wcnt == 0)*/) begin
-                    wstate_n = WRESP;
-                end
-            end
-        end
-        WRESP: begin
-            bvalid = 1'b1;
-
-            if (b_if.bready) begin
-                if (!p_hdr_full) begin
-                    awready = 1'b1;
-                end
-
-                if (aw_if.avalid & ~p_hdr_full) begin
-                    wstate_n = WDATA;
-                    p_hdr_wren = 1'b1;
-
-                    wcnt_n = aw_if.alen;
-                    wid_n = aw_if.aid;
-                end
-                else begin
-                    wstate_n = IDLE;
-                end
-            end
-        end
-        endcase
-    end
-
-    assign aw_if.aready = awready;
-    assign w_if.wready = wready;
-    assign b_if.bid = write_id;
-    assign b_if.bvalid = bvalid;
+    assign b_if.bid = 4'd0;
+    assign b_if.bvalid = 1'b1; // Always Valid
     assign b_if.bresp = 2'b00; // Fix to 0 (Okay)
+
+    TL_CNT #(.DEPTH(TX_DEPTH_LG2)) p_payload_cnt (
+        .clk        (clk),
+        .rst_n      (rst_n),
+        .wren_i     (w_if.wvalid & w_if.wlast & ~p_data_full),
+        .rden_i     (p_sent_i),
+        .cnt_o      (p_payload_cnt_o)
+    );
 
     // ************ Memory Read Packer ************
 
@@ -210,7 +135,6 @@ module TL_AXI_SLAVE #(
 
     always_comb begin : ar_to_memrd_req
         arready = 1'b0;
-        rvalid = 1'b0;
         np_hdr_wren = 1'b0;
         tag_allocate = 1'b0;
 
@@ -232,8 +156,11 @@ module TL_AXI_SLAVE #(
     } cplstate_t;
 
     cplstate_t cplstate, cplstate_n;
+
+    logic [3:0] rid, rid_n;
     logic [7:0] rcnt, rcnt_n;
     logic rvalid, rlast;
+
     wire [9:0] cpl_tag;
     assign cpl_tag = {cpl_hdr.tg_h, cpl_hdr.tg_m, cpl_hdr.tag};
     wire [9:0] cpl_length;
@@ -247,15 +174,18 @@ module TL_AXI_SLAVE #(
         if (!rst_n) begin
             cplstate <= IDLE;
             rcnt <= 8'd0;
+            rid <= 4'd0;
         end
         else begin
             cplstate <= cplstate_n;
             rcnt <= rcnt_n;
+            rid <= rid_n;
         end
 
     always_comb begin : cplD_to_r
         cplstate_n = cplstate;
         rcnt_n = rcnt;
+        rid_n = rid;
 
         tag_free = 1'b0;
         cpl_hdr_rden = 1'b0;
@@ -269,6 +199,7 @@ module TL_AXI_SLAVE #(
                 cplstate_n = RDATA;
 
                 rcnt_n = (cpl_length >>> 3) - 1;
+                rid_n = cpl_tag[9:6];
 
                 tag_free = 1'b1;
                 cpl_hdr_rden = 1'b1;
@@ -279,7 +210,7 @@ module TL_AXI_SLAVE #(
                 rvalid = 1'b1;
             end
 
-            if (rcnt == 0) begin
+            if (rcnt == 8'd0) begin
                 rlast = 1'b1;
             end
 
@@ -293,6 +224,7 @@ module TL_AXI_SLAVE #(
                     // cplstate_n = RDATA;
 
                     rcnt_n = (cpl_length >>> 3) - 1;
+                    rid_n = cpl_tag[9:6];
 
                     tag_free = 1'b1;
                     cpl_hdr_rden = 1'b1;
@@ -305,7 +237,7 @@ module TL_AXI_SLAVE #(
         endcase
     end
 
-    assign r_if.rid = 4'd0; // Fix to 0
+    assign r_if.rid = rid;
     assign r_if.rvalid = rvalid;
     assign r_if.rlast = rlast;
     assign r_if.rresp = 2'b00; // Fix to 0 (Okay)
@@ -343,7 +275,7 @@ module TL_AXI_SLAVE #(
 
     always_comb begin : gen_memwr_hdr
         // aw_if.asize: 5, 2^5 = 32B, 8DW
-        memwr_length = (ar_if.alen + 1) << 3;
+        memwr_length = (aw_if.alen + 1) << 3;
         memwr_tag = 10'd0;
 
         // DW 3
@@ -379,8 +311,8 @@ module TL_AXI_SLAVE #(
 
     always_comb begin : gen_memrd_hdr
         // aw_if.asize: 5, 2^5 = 32B, 8DW
-        memrd_length = (aw_if.alen + 1) << 3;
-        memrd_tag = {{(10-TAG_BIT){1'b0}}, tag_counter};
+        memrd_length = (ar_if.alen + 1) << 3;
+        memrd_tag = {ar_if.aid, tag_counter};
 
         // DW 3
         np_hdr.addr_l       = ar_if.aaddr[7:2]; // Address (Low)
@@ -409,14 +341,14 @@ module TL_AXI_SLAVE #(
         np_hdr.tlp_type     = 5'b00000; // Memory Read/Write Request
     end
 
-    PCIE_PKG::tlp_completion_w_data_hdr_t cpl_hdr;
+    PCIE_PKG::tlp_cpl_hdr_t cpl_hdr;
 
     // P Header FIFO
     TL_FIFO #(
-        .DEPTH_LG2     (4),             // FIFO depth: 16
+        .DEPTH_LG2     (TX_DEPTH_LG2),  // FIFO depth
         .DATA_WIDTH    (128),           // Data Width: 16B / 128bit / 4DW
         .RDATA_FF_OUT  (0),             // No Read Data FF
-        .RST_MEM       (0)              // Reset: Retain Memory
+        .USE_CNT       (0)              // w/o Counter
     ) u_tx_p_hdr_fifo (
         .clk           (clk),
         .rst_n         (rst_n),
@@ -432,13 +364,16 @@ module TL_AXI_SLAVE #(
         .cnt_o         (),
         .debug_o       (p_hdr_debug)
     );
-    
+
+    assign aw_if.aready = !p_hdr_full;
+    assign p_hdr_wren = aw_if.wvalid & ~p_hdr_full;
+
     // P Data FIFO
     TL_FIFO #(
-        .DEPTH_LG2     (4),             // FIFO depth: 16
+        .DEPTH_LG2     (TX_DEPTH_LG2),  // FIFO depth
         .DATA_WIDTH    (256),           // Data Width: 32B / 256bit / 8DW
         .RDATA_FF_OUT  (0),             // No Read Data FF
-        .RST_MEM       (0)              // Reset: Retain Memory
+        .USE_CNT       (0)              // w/o Counter
     ) u_tx_p_data_fifo (
         .clk           (clk),
         .rst_n         (rst_n),
@@ -455,12 +390,15 @@ module TL_AXI_SLAVE #(
         .debug_o       (p_data_debug)
     );
 
+    assign w_if.wready = !p_data_full;
+    assign p_data_wren = w_if.wvalid & ~p_data_full;
+
     // NP Header FIFO
     TL_FIFO #(
-        .DEPTH_LG2     (4),             // FIFO depth: 16
+        .DEPTH_LG2     (TX_DEPTH_LG2),  // FIFO depth
         .DATA_WIDTH    (128),           // Data Width: 16B / 128bit / 4DW
         .RDATA_FF_OUT  (0),             // No Read Data FF
-        .RST_MEM       (0)              // Reset: Retain Memory
+        .USE_CNT       (0)              // w/o Counter
     ) u_tx_np_hdr_fifo (
         .clk           (clk),
         .rst_n         (rst_n),
@@ -470,7 +408,7 @@ module TL_AXI_SLAVE #(
         .wdata_i       (np_hdr),
 
         .empty_o       (np_hdr_empty),
-        .rden_i        (np_hdr_rden),
+        .rden_i        (np_hdr_rden_i),
         .rdata_o       (np_hdr_rdata),
 
         .cnt_o         (),
@@ -479,17 +417,17 @@ module TL_AXI_SLAVE #(
 
     // Cpl Header FIFO
     TL_FIFO #(
-        .DEPTH_LG2     (RX_DEPTH_LG2),             // FIFO depth: 16
-        .DATA_WIDTH    (96),           // Data Width: 12B / 96bit / 3DW
+        .DEPTH_LG2     (RX_DEPTH_LG2),  // FIFO depth: 16
+        .DATA_WIDTH    (96),            // Data Width: 12B / 96bit / 3DW
         .RDATA_FF_OUT  (0),             // No Read Data FF
-        .RST_MEM       (0)              // Reset: Retain Memory
+        .USE_CNT       (1)              // w/ Counter
     ) u_rx_cpl_hdr_fifo (
         .clk           (clk),
         .rst_n         (rst_n),
 
-        .full_o        (cpl_hdr_full),
-        .wren_i        (cpl_hdr_wren),
-        .wdata_i       (cpl_hdr_wdata),
+        .full_o        (cpl_hdr_full_o),
+        .wren_i        (cpl_hdr_wren_i),
+        .wdata_i       (cpl_hdr_wdata_i),
 
         .empty_o       (cpl_hdr_empty),
         .rden_i        (cpl_hdr_rden),
@@ -501,21 +439,21 @@ module TL_AXI_SLAVE #(
 
     // Cpl Data FIFO
     TL_FIFO #(
-        .DEPTH_LG2     (RX_DEPTH_LG2),             // FIFO depth: 16
+        .DEPTH_LG2     (RX_DEPTH_LG2),  // FIFO depth: 16
         .DATA_WIDTH    (256),           // Data Width: 16B / 128bit / 4DW
         .RDATA_FF_OUT  (0),             // No Read Data FF
-        .RST_MEM       (0)              // Reset: Retain Memory
+        .USE_CNT       (1)              // w/ Counter
     ) u_rx_cpl_data_fifo (
         .clk           (clk),
         .rst_n         (rst_n),
 
-        .full_o        (cpl_data_full),
-        .wren_i        (cpl_data_wren),
-        .wdata_i       (r_if.rdata),
+        .full_o        (cpl_data_full_o),
+        .wren_i        (cpl_data_wren_i),
+        .wdata_i       (cpl_data_wdata_i),
 
         .empty_o       (cpl_data_empty),
         .rden_i        (cpl_data_rden),
-        .rdata_o       (cpl_data_rdata),
+        .rdata_o       (r_if.rdata),
 
         .cnt_o         (cpl_data_cnt_o),
         .debug_o       (cpl_data_debug)
