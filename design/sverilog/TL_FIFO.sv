@@ -8,7 +8,7 @@ module TL_FIFO
     parameter   int     DEPTH_LG2       = 4
   , parameter   int     DATA_WIDTH      = 256
   , parameter   bit     RDATA_FF_OUT    = 0
-  , parameter   bit     RST_MEM         = 0
+  , parameter   bit     USE_CNT         = 0
 )
 (
     input   wire                        clk
@@ -22,15 +22,12 @@ module TL_FIFO
   , input   wire                        rden_i
   , output  wire    [DATA_WIDTH-1:0]    rdata_o
 
-  , output  wire    [DEPTH_LG2-1:0]     cnt_o
+  , output  wire    [DEPTH_LG2:0]       cnt_o
   , output  logic   [31:0]              debug_o
 );
     // read/write pointers have one extra bit for full/empty checking
     logic   [DEPTH_LG2:0]               wrptr,      wrptr_n;
     logic   [DEPTH_LG2:0]               rdptr,      rdptr_n;
-
-    // needed for capacity checking
-    logic   [DEPTH_LG2:0]               cnt,        cnt_n;
 
     logic                               full,       full_n;
     logic                               empty,      empty_n;
@@ -42,8 +39,6 @@ module TL_FIFO
             wrptr                       <= {(DEPTH_LG2+1){1'b0}};
             rdptr                       <= {(DEPTH_LG2+1){1'b0}};
 
-            cnt                         <= 'd0;
-
             full                        <= 1'b1; // not to receive new data while this IP is under a reset.
             empty                       <= 1'b1;
             overflown                   <= 1'b0;
@@ -52,8 +47,6 @@ module TL_FIFO
         else begin
             wrptr                       <= wrptr_n;
             rdptr                       <= rdptr_n;
-
-            cnt                         <= cnt_n;
 
             full                        <= full_n;
             empty                       <= empty_n;
@@ -76,16 +69,6 @@ module TL_FIFO
             rdptr_n                     = rdptr;
         end
 
-        if (wren_i & ~rden_i) begin
-            cnt_n                       = cnt + 'd1;
-        end
-        else if (~wren_i & rden_i) begin
-            cnt_n                       = cnt - 'd1;
-        end
-        else begin
-            cnt_n                       = cnt;
-        end
-
         full_n                      =  (wrptr_n[DEPTH_LG2] != rdptr_n[DEPTH_LG2])
                                      & (wrptr_n[DEPTH_LG2-1:0] == rdptr_n[DEPTH_LG2-1:0]);
         empty_n                     = (wrptr_n == rdptr_n);
@@ -95,7 +78,6 @@ module TL_FIFO
 
     assign  full_o                  = full;
     assign  empty_o                 = empty;
-    assign  cnt_o                   = cnt;
     assign  debug_o[31]             = overflown;
     assign  debug_o[30]             = full;
     assign  debug_o[15]             = undrflown;
@@ -123,11 +105,6 @@ module TL_FIFO
         (undrflown !== 1'b1)
     );
     /* svlint on operator_case_equality */
-
-    always_comb begin
-        for (i = 0; i < 32; i++)
-            $display(asdfdsaf);
-    end
     // synopsys translate_on
 
     generate
@@ -174,6 +151,19 @@ module TL_FIFO
               , .addr_b                         (rdptr[DEPTH_LG2-1:0])
               , .do_b                           (rdata_o)
             );
+        end
+
+        if (USE_CNT) begin : with_counter
+            TL_CNT #(.DEPTH(DEPTH_LG2)) fifo_cnt (
+                .clk        (clk),
+                .rst_n      (rst_n),
+                .wren_i     (wren_i),
+                .rden_i     (rden_i),
+                .cnt_o      (cnt_o)
+            );
+        end
+        else begin : without_counter
+            assign cnt_o = {(DEPTH_LG2){1'b0}};
         end
     endgenerate
 
