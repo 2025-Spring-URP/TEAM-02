@@ -10,7 +10,7 @@ module DLL_Retry_Monitor
    input    wire                           srst_n,
 
 // TL
-    output  wire   [RETRY_DEPTH_LG2-1:0]            retry_buffer_leftover_cnt_o,              // DW
+    output  wire   [RETRY_DEPTH_LG2+2:0]            retry_buffer_leftover_cnt_o,              // DW
 
 // Packetizer
     input   wire    [PIPE_DATA_WIDTH/8-1:0]         data_i[8],
