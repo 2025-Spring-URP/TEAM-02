@@ -226,6 +226,260 @@ package PCIE_PKG;
         return      tlp_cpl_hdr;
     endfunction
 
+    typedef struct packed {
+        logic   [191:0]     padding;
+        logic   [15:0]      crc;
+        logic   [7:0]       data_fc_l;  
+        logic   [1:0]       hdr_fc_l;
+        logic   [1:0]       data_scale;
+        logic   [3:0]       data_fc_h;
+        logic   [1:0]       hdr_scale;
+        logic   [5:0]       hdr_fc_h;
+        logic   [7:0]       dllptype;
+        logic   [15:0]      frametoken;
+    } dllp_fc_init_t;
+
+    function automatic dllp_fc_init_t get_dllp_fc_init(
+        input   logic   [7:0]   dllptype
+    );
+        dllp_fc_init_t      dllp_fc_init;
+        
+        dllp_fc_init.frametoken   = 'hACF0;
+        dllp_fc_init.dllptype     = dllptype;
+        dllp_fc_init.hdr_scale    = 'b01;
+        dllp_fc_init.hdr_fc_h     = 'b1000_00;
+        dllp_fc_init.hdr_fc_l     = 'b00;
+        dllp_fc_init.data_scale   = 'b01;
+        dllp_fc_init.data_fc_h    = 'b0000;
+        dllp_fc_init.data_fc_l    = 'b1000_0000;
+        dllp_fc_init.crc          = {16{1'b0}};
+        dllp_fc_init.padding      = {192{1'b0}};  // 192비트 맞춤
+
+        return dllp_fc_init;
+    endfunction
+
+    typedef struct packed {
+        logic   [63:0]     padding; //8B Padding
+
+        //LCRC, 4B
+        logic   [31:0]      lcrc;
+
+        // Header 16B
+        logic   [5:0]       addr_l;
+        logic   [1:0]       reserved;
+        logic   [23:0]      addr_m;
+        logic   [31:0]      addr_h;
+        logic   [7:0]       byte_enable;
+        logic   [7:0]       tag;
+        logic   [15:0]      requester_id;
+
+        logic   [7:0]       length_l;
+        logic               td;
+        logic               ep;
+        logic   [1:0]       attr_l;
+        logic   [1:0]       at;
+        logic   [1:0]       length_h;
+        logic               tg_h;
+        logic   [2:0]       tc;
+        logic               tg_m;
+        logic               attr_h;
+        logic               ln;
+        logic               th;
+        logic   [2:0]       fmt;
+        logic   [4:0]       tlp_type;
+
+        // Frametoken 4B
+        logic   [7:0]       seq_number_l;
+        logic   [3:0]       fcrc;
+        logic   [3:0]       seq_number_h;
+        logic               fp;
+        logic   [6:0]       tlp_length_h;
+        logic   [3:0]       tlp_length_l;
+        logic   [3:0]       frame_type;
+    } tlp_memory_read_t;
+
+
+    function automatic tlp_memory_read_t get_tlp_memory_read(
+        input   logic   [1:0]   count,
+        input   logic   [63:0]  address
+    );
+        tlp_memory_read_t      tlp_memory_read;
+
+        tlp_memory_read.tlp_length_l    = 'b0110;
+        tlp_memory_read.frame_type      = 'b1111;
+        tlp_memory_read.fp              = 'b0;
+        tlp_memory_read.tlp_length_h    = 'b000_0000;
+        tlp_memory_read.fcrc            = 'b0000;
+        tlp_memory_read.seq_number_h    = 'h0;
+        tlp_memory_read.seq_number_l    = count & ('hFF);
+        tlp_memory_read.fmt             = 'b001;
+        tlp_memory_read.tlp_type        = 'b00000;
+        tlp_memory_read.tg_h            = 'b0;
+        tlp_memory_read.tc              = 'b000;
+        tlp_memory_read.tg_m            = 'b0;
+        tlp_memory_read.attr_h          = 'b0;
+        tlp_memory_read.ln              = 'b0;
+        tlp_memory_read.th              = 'b0;
+        tlp_memory_read.td              = 'b0;
+        tlp_memory_read.ep              = 'b0;
+        tlp_memory_read.attr_l          = 'b00;
+        tlp_memory_read.at              = 'b00;
+        tlp_memory_read.length_l        = (count+1'b1) * 4;
+        tlp_memory_read.length_h        = 'h0;
+        tlp_memory_read.requester_id    = 'b00000000_00001_000;
+        tlp_memory_read.tag             = count & ('hFF);
+        tlp_memory_read.byte_enable     = 'h00;
+        tlp_memory_read.addr_h          = {address[39:32], address[47:40], address[55:48], address[63:56]};
+        tlp_memory_read.addr_m          = {address[15:8], address[23:16], address[31:24]};
+        tlp_memory_read.addr_l          = address[7:2];
+        tlp_memory_read.reserved        = 'b00;
+        tlp_memory_read.lcrc            = 'h0;
+        tlp_memory_read.padding         = 'h0; //24B Padding
+        
+        return tlp_memory_read;
+    endfunction
+
+    typedef struct packed {
+        // Header 16B
+        logic   [5:0]       addr_l;
+        logic   [1:0]       reserved;
+        logic   [23:0]      addr_m;
+        logic   [31:0]      addr_h;
+        logic   [7:0]       byte_enable;
+        logic   [7:0]       tag;
+        logic   [15:0]      requester_id;
+
+        logic   [7:0]       length_l;
+        logic               td;
+        logic               ep;
+        logic   [1:0]       attr_l;
+        logic   [1:0]       at;
+        logic   [1:0]       length_h;
+        logic               tg_h;
+        logic   [2:0]       tc;
+        logic               tg_m;
+        logic               attr_h;
+        logic               ln;
+        logic               th;
+        logic   [2:0]       fmt;
+        logic   [4:0]       tlp_type;
+
+        // Frametoken 4B
+        logic   [7:0]       seq_number_l;
+        logic   [3:0]       fcrc;
+        logic   [3:0]       seq_number_h;
+        logic               fp;
+        logic   [6:0]       tlp_length_h;
+        logic   [3:0]       tlp_length_l;
+        logic   [3:0]       frame_type;
+
+        // Padding
+        logic   [95:0]     padding; //12B Padding
+    } tlp_memory_write_t;
+
+
+    function automatic tlp_memory_write_t get_tlp_memory_write(
+        input   int             count,
+        input   int             payload_size,
+        input   logic   [63:0]  address
+    );
+        tlp_memory_write_t      tlp_memory_write;
+
+        tlp_memory_write.tlp_length_l    = 'b0110;
+        tlp_memory_write.frame_type      = 'b1111;
+        tlp_memory_write.fp              = 'b0;
+        tlp_memory_write.tlp_length_h    = 'b000_0010;
+        tlp_memory_write.fcrc            = 'b0000;
+        tlp_memory_write.seq_number_h    = 'h0;
+        tlp_memory_write.seq_number_l    =  count & ('hFF);
+        tlp_memory_write.fmt             = 'b011;
+        tlp_memory_write.tlp_type        = 'b00000;
+        tlp_memory_write.tg_h            = 'b0;
+        tlp_memory_write.tc              = 'b000;
+        tlp_memory_write.tg_m            = 'b0;
+        tlp_memory_write.attr_h          = 'b0;
+        tlp_memory_write.ln              = 'b0;
+        tlp_memory_write.th              = 'b0;
+        tlp_memory_write.td              = 'b0;
+        tlp_memory_write.ep              = 'b0;
+        tlp_memory_write.attr_l          = 'b00;
+        tlp_memory_write.at              = 'b00;
+        tlp_memory_write.length_l        = 'h20;
+        tlp_memory_write.length_h        = 'h0;
+        tlp_memory_write.requester_id    = 'b00000000_00001_000;
+        tlp_memory_write.tag             = 'h0;
+        tlp_memory_write.byte_enable     = 'h00;
+        tlp_memory_write.addr_h          = {address[39:32], address[47:40], address[55:48], address[63:56]};
+        tlp_memory_write.addr_m          = {address[15:8], address[23:16], address[31:24]};
+        tlp_memory_write.addr_l          = address[7:2];
+        tlp_memory_write.reserved        = 'b00;
+        tlp_memory_write.padding         = 'h0;
+        
+        return tlp_memory_write;
+    endfunction
+
+    localparam  [255:0] PCIE_CRC_16_COEFF[15:0] = '{
+    256'hDC7F_DD6A_38F0_3E77_F5F5_2A2C_636D_B05C_3978_EA30_CD50_E0D9_9B06_93D4_746B_2431,   // [15]
+    256'h3240_33DF_2488_214C_0F0F_BF3A_52DB_6872_25C4_9F28_ABF8_90B5_5685_DA3E_4E5E_B629,   // [14]
+    256'h455F_C485_AAB4_2ED1_F272_F5B1_4A00_0465_2B9A_A5A4_98AC_A883_3044_7ECB_5344_7F25,   // [13]
+    256'h7ED0_3F28_EDAA_291F_0CCC_50F4_C66D_B26E_ACB5_B8E2_8106_B498_0324_ACB1_DDC9_1BA3,   // [12]
+    256'h6317_C2FE_4E25_2AF8_7393_0256_005B_696B_6F22_3641_8DD3_BA95_9A94_C58C_9A8F_A9E0,   // [11]
+    256'hB18B_E17F_2712_957C_39C9_812B_002D_B4B5_B791_1B20_C6E9_DD4A_CD4A_62C6_4D47_D4F0,   // [10]
+    256'hD8C5_F0BF_9389_4ABE_1CE4_C095_8016_DA5A_DBC8_8D90_6374_EEA5_66A5_3163_26A3_EA78,   // [9]
+    256'hEC62_F85F_C9C4_A55F_0E72_604A_C00B_6D2D_6DE4_46C8_31BA_7752_B352_98B1_9351_F53C,   // [8]
+    256'hF631_7C2F_E4E2_52AF_8739_3025_6005_B696_B6F2_2364_18DD_3BA9_59A9_4C58_C9A8_FA9E,   // [7]
+    256'h7B18_BE17_F271_2957_C39C_9812_B002_DB4B_5B79_11B2_0C6E_9DD4_ACD4_A62C_64D4_7D4F,   // [6]
+    256'hE1F3_8261_C1C8_AADC_143B_6625_3B6C_DDF9_94C4_62E9_CB67_AE33_CD6C_C0C2_4601_1A96,   // [5]
+    256'hF0F9_C130_E0E4_556E_0A1D_B312_9DB6_6EFC_CA62_3174_E5B3_D719_E6B6_6061_2300_8D4B,   // [4]
+    256'h2403_3DF2_4882_14C0_F0FB_F3A5_2DB6_8722_5C49_F28A_BF89_0B55_685D_A3E4_E5EB_6294,   // [3]
+    256'h9201_9EF9_2441_0A60_787D_F9D2_96DB_4391_2E24_F945_5FC4_85AA_B42E_D1F2_72F5_B14A,   // [2]
+    256'hC900_CF7C_9220_8530_3C3E_FCE9_4B6D_A1C8_9712_7CA2_AFE2_42D5_5A17_68F9_397A_D8A5,   // [1]
+    256'hB8FF_BAD4_71E0_7CEF_EBEA_5458_C6DB_60B8_72F1_D461_9AA1_C1B3_360D_27A8_E8D6_4863};  // [0]
+
+
+    localparam  [255:0] PCIE_CRC_32_COEFF[31:0] = '{
+    256'hDC7F_DD6A_38F0_3E77_F5F5_2A2C_636D_B05C_3978_EA30_CD50_E0D9_9B06_93D4_746B_2431,   // [31]
+    256'h3240_33DF_2488_214C_0F0F_BF3A_52DB_6872_25C4_9F28_ABF8_90B5_5685_DA3E_4E5E_B629,   // [30]
+    256'h455F_C485_AAB4_2ED1_F272_F5B1_4A00_0465_2B9A_A5A4_98AC_A883_3044_7ECB_5344_7F25,   // [29]
+    256'h7ED0_3F28_EDAA_291F_0CCC_50F4_C66D_B26E_ACB5_B8E2_8106_B498_0324_ACB1_DDC9_1BA3,   // [28]
+    256'h6317_C2FE_4E25_2AF8_7393_0256_005B_696B_6F22_3641_8DD3_BA95_9A94_C58C_9A8F_A9E0,   // [27]
+    256'hB18B_E17F_2712_957C_39C9_812B_002D_B4B5_B791_1B20_C6E9_DD4A_CD4A_62C6_4D47_D4F0,   // [26]
+    256'hD8C5_F0BF_9389_4ABE_1CE4_C095_8016_DA5A_DBC8_8D90_6374_EEA5_66A5_3163_26A3_EA78,   // [25]
+    256'hEC62_F85F_C9C4_A55F_0E72_604A_C00B_6D2D_6DE4_46C8_31BA_7752_B352_98B1_9351_F53C,   // [24]
+    256'hF631_7C2F_E4E2_52AF_8739_3025_6005_B696_B6F2_2364_18DD_3BA9_59A9_4C58_C9A8_FA9E,   // [23]
+    256'h7B18_BE17_F271_2957_C39C_9812_B002_DB4B_5B79_11B2_0C6E_9DD4_ACD4_A62C_64D4_7D4F,   // [22]
+    256'hE1F3_8261_C1C8_AADC_143B_6625_3B6C_DDF9_94C4_62E9_CB67_AE33_CD6C_C0C2_4601_1A96,   // [21]
+    256'hF0F9_C130_E0E4_556E_0A1D_B312_9DB6_6EFC_CA62_3174_E5B3_D719_E6B6_6061_2300_8D4B,   // [20]
+    256'h2403_3DF2_4882_14C0_F0FB_F3A5_2DB6_8722_5C49_F28A_BF89_0B55_685D_A3E4_E5EB_6294,   // [19]
+    256'h9201_9EF9_2441_0A60_787D_F9D2_96DB_4391_2E24_F945_5FC4_85AA_B42E_D1F2_72F5_B14A,   // [18]
+    256'hC900_CF7C_9220_8530_3C3E_FCE9_4B6D_A1C8_9712_7CA2_AFE2_42D5_5A17_68F9_397A_D8A5,   // [17]
+    256'hB8FF_BAD4_71E0_7CEF_EBEA_5458_C6DB_60B8_72F1_D461_9AA1_C1B3_360D_27A8_E8D6_4863,   // [16]
+    256'hDC7F_DD6A_38F0_3E77_F5F5_2A2C_636D_B05C_3978_EA30_CD50_E0D9_9B06_93D4_746B_2431,   // [15]
+    256'h3240_33DF_2488_214C_0F0F_BF3A_52DB_6872_25C4_9F28_ABF8_90B5_5685_DA3E_4E5E_B629,   // [14]
+    256'h455F_C485_AAB4_2ED1_F272_F5B1_4A00_0465_2B9A_A5A4_98AC_A883_3044_7ECB_5344_7F25,   // [13]
+    256'h7ED0_3F28_EDAA_291F_0CCC_50F4_C66D_B26E_ACB5_B8E2_8106_B498_0324_ACB1_DDC9_1BA3,   // [12]
+    256'h6317_C2FE_4E25_2AF8_7393_0256_005B_696B_6F22_3641_8DD3_BA95_9A94_C58C_9A8F_A9E0,   // [11]
+    256'hB18B_E17F_2712_957C_39C9_812B_002D_B4B5_B791_1B20_C6E9_DD4A_CD4A_62C6_4D47_D4F0,   // [10]
+    256'hD8C5_F0BF_9389_4ABE_1CE4_C095_8016_DA5A_DBC8_8D90_6374_EEA5_66A5_3163_26A3_EA78,   // [9]
+    256'hEC62_F85F_C9C4_A55F_0E72_604A_C00B_6D2D_6DE4_46C8_31BA_7752_B352_98B1_9351_F53C,   // [8]
+    256'hF631_7C2F_E4E2_52AF_8739_3025_6005_B696_B6F2_2364_18DD_3BA9_59A9_4C58_C9A8_FA9E,   // [7]
+    256'h7B18_BE17_F271_2957_C39C_9812_B002_DB4B_5B79_11B2_0C6E_9DD4_ACD4_A62C_64D4_7D4F,   // [6]
+    256'hE1F3_8261_C1C8_AADC_143B_6625_3B6C_DDF9_94C4_62E9_CB67_AE33_CD6C_C0C2_4601_1A96,   // [5]
+    256'hF0F9_C130_E0E4_556E_0A1D_B312_9DB6_6EFC_CA62_3174_E5B3_D719_E6B6_6061_2300_8D4B,   // [4]
+    256'h2403_3DF2_4882_14C0_F0FB_F3A5_2DB6_8722_5C49_F28A_BF89_0B55_685D_A3E4_E5EB_6294,   // [3]
+    256'h9201_9EF9_2441_0A60_787D_F9D2_96DB_4391_2E24_F945_5FC4_85AA_B42E_D1F2_72F5_B14A,   // [2]
+    256'hC900_CF7C_9220_8530_3C3E_FCE9_4B6D_A1C8_9712_7CA2_AFE2_42D5_5A17_68F9_397A_D8A5,   // [1]
+    256'hB8FF_BAD4_71E0_7CEF_EBEA_5458_C6DB_60B8_72F1_D461_9AA1_C1B3_360D_27A8_E8D6_4863};  // [0]
+
+    function automatic logic is_static0_err(cxl_flit_payload_t p);
+        is_static0_err                  = 1'b0;
+        if (is_llcrd_flit(p) | is_retry_flit(p) | is_init_flit(p)) begin
+            cxl_control_flit_pld_t          payload;
+            payload                         = p;
+
+            is_static0_err                  = (payload.static0 != 24'd0);
+        end
+    endfunction
 
 endpackage
 
