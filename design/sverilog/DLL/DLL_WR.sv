@@ -11,7 +11,7 @@ module DLL_WR #(
     // TL
     input   wire  [PIPE_DATA_WIDTH-1:0]     data_i,
     input   wire  [1:0]                     tl_d_en_i,                          // 00 : IDLE, 01 : HDR, 10 : DATA, 11 : DONE
-    output  wire  [RETRY_DEPTH_LG2-1:0]     retry_buffer_leftover_cnt_o,        // DW
+    output  wire  [RETRY_DEPTH_LG2+2:0]     retry_buffer_leftover_cnt_o,        // DW
 
     // DLL_RD
     input   wire  [1:0]                     DLCMSM_i,
