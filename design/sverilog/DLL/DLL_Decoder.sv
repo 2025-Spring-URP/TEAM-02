@@ -78,7 +78,7 @@ reg                     ep_cc_p_en, ep_cc_p_en_n,
 
 reg [CREDIT_DEPTH-1:0]  acknak_seq_num, acknak_seq_num_n;
 
-reg [1:0]               acknak_seq_en;          
+reg [1:0]               acknak_seq_en, acknak_seq_en_n;          
 
 
 localparam          S_DLLP_IDLE         = 2'd0,
@@ -116,6 +116,7 @@ always_ff @(posedge sclk) begin
         ep_cc_cpl_en        <= 'd0;
 
         acknak_seq_num      <= 'd0;
+        acknak_seq_en       <= 'd0;
     end
     else begin
         dllp_state          <= dllp_state_n;
@@ -143,6 +144,7 @@ always_ff @(posedge sclk) begin
         ep_cc_cpl_en        <= ep_cc_cpl_en_n;
 
         acknak_seq_num      <= acknak_seq_num_n;
+        acknak_seq_en       <= acknak_seq_en_n;
     end
 end
 
@@ -150,14 +152,42 @@ always_comb begin
     dllp_crc_input              = 32'd0;
     dllp_crc_result             = 16'hFFFF;
 
-    acknak_seq_en               = 2'd0;
+    
 
-    ep_cc_p_en_n                = 1'b0;
-    ep_cc_np_en_n               = 1'b0;
-    ep_cc_cpl_en_n              = 1'b0;
+    dllp_state_n          = dllp_state;
+
+    dllp_32B_n            = dllp_32B;
+
+    ep_cl_p_h_n           = ep_cl_p_h;
+    ep_cl_p_d_n           = ep_cl_p_d;
+    ep_cl_np_h_n          = ep_cl_np_h;
+    ep_cl_cpl_h_n         = ep_cl_cpl_h;
+    ep_cl_cpl_d_n         = ep_cl_cpl_d;
+
+    init2_p_received_n    = init2_p_received;
+    init2_np_received_n   = init2_np_received;
+    init2_cpl_received_n  = init2_cpl_received;
+
+    ep_cc_p_h_n           = ep_cc_p_h;
+    ep_cc_p_d_n           = ep_cc_p_d;
+    ep_cc_np_h_n          = ep_cc_np_h;
+    ep_cc_cpl_h_n         = ep_cc_cpl_h;
+    ep_cc_cpl_d_n         = ep_cc_cpl_d;
+
+    ep_cc_p_en_n          = ep_cc_p_en;
+    ep_cc_np_en_n         = ep_cc_np_en;
+    ep_cc_cpl_en_n        = ep_cc_cpl_en;
+
+    acknak_seq_num_n      = acknak_seq_num;
+    acknak_seq_en_n       = acknak_seq_en;
 
     case(dllp_state)
         S_DLLP_IDLE: begin
+            acknak_seq_en_n       = 'd0;
+            ep_cc_p_en_n          = 'd0;
+            ep_cc_np_en_n         = 'd0;
+            ep_cc_cpl_en_n        = 'd0;
+
             if ((pipe2dll_valid_i == 1'b1) && (pipe2dll_data_i[15:0] == 16'hACF0)) begin
                 dllp_32B_n      = pipe2dll_data_i;
                 dllp_state_n    =   S_DLLP_CRC_CHECK;
@@ -222,11 +252,11 @@ always_comb begin
                 end
 
                 8'b0000_0000: begin // ack
-                    acknak_seq_en    = 2'd1;
+                    acknak_seq_en_n    = 2'd1;
                     acknak_seq_num_n = {dllp_32B[35:32], dllp_32B[47:40]}; // ack sequence number
                 end
                 8'b0001_0000: begin // nak
-                    acknak_seq_en    = 2'd2;
+                    acknak_seq_en_n    = 2'd2;
                     acknak_seq_num_n = {dllp_32B[35:32], dllp_32B[47:40]}; // nak sequence number 
                 end
 
@@ -253,7 +283,7 @@ localparam          S_TLP_IDLE              = 3'd0,
 
 reg [PIPE_DATA_WIDTH-1:0] tlp_first_32B, tlp_first_32B_n;
 
-reg [PIPE_DATA_WIDTH-1:0] tlp_payload_32B[16], tlp_payload_32B_n[16];
+reg [PIPE_DATA_WIDTH-1:0] tlp_payload_32B[4], tlp_payload_32B_n[4];
 reg [10:0] cnt, cnt_n;
 reg [10:0] wcnt, wcnt_n;
 reg [2:0]  tlp_state, tlp_state_n;
@@ -275,7 +305,7 @@ always_ff @(posedge sclk) begin
         dll2tl_data        <= 'd0;
         dll2tl_data_en     <= 'd0;
 
-        for (int i=0; i<16; i++) begin
+        for (int i=0; i<4; i++) begin
             tlp_payload_32B[i] <= {PIPE_DATA_WIDTH{1'b0}};
         end
     end
@@ -289,7 +319,7 @@ always_ff @(posedge sclk) begin
         dll2tl_data        <= dll2tl_data_n;
         dll2tl_data_en     <= dll2tl_data_en_n;
 
-        for (int i=0; i<16; i++) begin
+        for (int i=0; i<4; i++) begin
             tlp_payload_32B[i] <= tlp_payload_32B_n[i];
         end
     end
@@ -305,7 +335,7 @@ always_comb begin
     dll2tl_data_n        = dll2tl_data;
     dll2tl_data_en_n     = dll2tl_data_en;
 
-    for (int i=0; i<16; i++) begin
+    for (int i=0; i<4; i++) begin
         tlp_payload_32B_n[i] = tlp_payload_32B[i];
     end
 
@@ -319,7 +349,7 @@ always_comb begin
                 end
                 else begin
                     cnt_n           =   ((pipe2dll_data_i[14:4] - 'd6) / 8) - 1;
-                    wcnt_n          =   (pipe2dll_data_i[14:4] - 'd6) / 8;
+                    wcnt_n          =   ((pipe2dll_data_i[14:4] - 'd6) / 8);
                     tlp_state_n     =   S_TLP_P_CPL_SEQ_CHECK;
                 end
             end
