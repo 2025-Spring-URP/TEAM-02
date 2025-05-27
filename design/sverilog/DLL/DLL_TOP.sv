@@ -11,7 +11,7 @@ module DLL_TOP #(
     // TL --> DLL_WR
     input   wire  [PIPE_DATA_WIDTH-1:0]     tl2dll_data_i,
     input   wire  [2:0]                     tl2dll_en_i,
-    output  wire  [RETRY_DEPTH_LG2-1:0]     retry_buffer_leftover_cnt_o,        // DW
+    output  wire  [RETRY_DEPTH_LG2+2:0]     retry_buffer_leftover_cnt_o,        // DW
 
     // DLL_RD --> TL
 	input wire      [CREDIT_DEPTH-1:0]      cc_p_h_i,		        // Posted(Write) header credit consumed
