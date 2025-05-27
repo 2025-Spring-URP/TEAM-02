@@ -14,19 +14,19 @@ module DLL_TOP #(
     output  wire  [RETRY_DEPTH_LG2-1:0]     retry_buffer_leftover_cnt_o,        // DW
 
     // DLL_RD --> TL
-	input wire      [CREDIT_DEPTH-1:0]      cc_p_h_i,		        // Posted(Write) header credit consumed
+    input wire      [CREDIT_DEPTH-1:0]      cc_p_h_i,		        // Posted(Write) header credit consumed
     input wire      [CREDIT_DEPTH-1:0]      cc_p_d_i,		        // Posted(Write) data credit consumed
-	input wire      [CREDIT_DEPTH-1:0]      cc_np_h_i,		    // Non-Posted(Read) header credit consumed
+    input wire      [CREDIT_DEPTH-1:0]      cc_np_h_i,		    // Non-Posted(Read) header credit consumed
     input wire      [CREDIT_DEPTH-1:0]      cc_np_d_i,		    // Non-Posted(Read) data credit consumed
-	input wire      [CREDIT_DEPTH-1:0]      cc_cpl_h_i,	        // Completion credit header consumed
+    input wire      [CREDIT_DEPTH-1:0]      cc_cpl_h_i,	        // Completion credit header consumed
     input wire      [CREDIT_DEPTH-1:0]      cc_cpl_d_i,           // Completion credit data consumed
 
-	output wire     [PIPE_DATA_WIDTH-1:0]   dll2tl_data_o,
+    output wire     [PIPE_DATA_WIDTH-1:0]   dll2tl_data_o,
     output wire     [2:0]                   dll2tl_data_en_o,
     
     output wire     [CREDIT_DEPTH-1:0]      ep_cc_p_h_o,
     output wire     [CREDIT_DEPTH-1:0]      ep_cc_p_d_o,
-	output wire                             ep_cc_p_en_o,
+    output wire                             ep_cc_p_en_o,
 
     output wire     [CREDIT_DEPTH-1:0]      ep_cc_np_h_o,
     output wire                             ep_cc_np_en_o,
@@ -40,7 +40,7 @@ module DLL_TOP #(
     output wire     [CREDIT_DEPTH-1:0]      ep_cl_np_h_o,
     output wire     [CREDIT_DEPTH-1:0]      ep_cl_cpl_h_o,
     output wire     [CREDIT_DEPTH-1:0]      ep_cl_cpl_d_o,
-	output wire                             ep_cl_en_o,
+    output wire                             ep_cl_en_o,
 
     // PIPE Interface
     output  wire  [PIPE_DATA_WIDTH-1:0]     pipe_txdata_o,
@@ -55,7 +55,7 @@ wire [1:0]                              DLCMSM_w;
 wire                                    dllp_valid_w;
 wire [PIPE_DATA_WIDTH-1:0]              dllp_data_w;
 wire                                    dllp_ready_w;
-wire [1:0]                              acknak_seq_num_w; // 2 bits for ACK/NAK sequence number
+wire [15:0]                             acknak_seq_num_w; // 16 bits for ACK/NAK sequence number
 wire [1:0]                              acknak_seq_en_w;  // 2 bits for ACK/NAK sequence enable
 
 
