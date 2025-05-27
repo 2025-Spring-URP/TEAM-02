@@ -5,10 +5,10 @@ module _DLL_DLLP_Generator
 #(
     parameter   PIPE_DATA_WIDTH             = 256,
     parameter   SEQ_BITS                    = 12,
+
     parameter   CREDIT_LIMIT_P_HEADER       = 16,
     parameter   CREDIT_LIMIT_P_DATA         = 16,
     parameter   CREDIT_LIMIT_NP_HEADER      = 16,
-    parameter   CREDIT_LIMIT_NP_DATA        = 16,
     parameter   CREDIT_LIMIT_CPL_HEADER     = 16,
     parameter   CREDIT_LIMIT_CPL_DATA       = 16
 )
@@ -34,11 +34,9 @@ module _DLL_DLLP_Generator
     input   wire                                    NAK_scheduled_i,        // CRC에러/SEQ에러 감지하면 1로 활성화돼서 들어옴
     input   wire    [SEQ_BITS-1:0]                  next_rcv_seq_i,         // 지금까지 잘 받은 패킷의 SEQ. 외부에 있는 레지스터에 저장되어있음
 
-    // PIPE
+    // Arbiter
     output  wire    [PIPE_DATA_WIDTH-1:0]           dllp_data_o,            // 버퍼에게 보내는 32바이트짜리 DLLP 조각
     output  wire                                    dllp_valid_o,            // 버퍼에게 보낼게 하는 신호
-
-    //Arbitor
     input   wire                                    arb_ready_i
 );
 
@@ -110,8 +108,8 @@ always_comb begin
                 init1_np_dllp.dllp_type  = 8'b0101_0000;
                 init1_np_dllp.hdrFC_h    = CREDIT_LIMIT_NP_HEADER[7:2];
                 init1_np_dllp.hdrFC_l    = CREDIT_LIMIT_NP_HEADER[1:0];
-                init1_np_dllp.dataFC_h   = CREDIT_LIMIT_NP_DATA[11:8];
-                init1_np_dllp.dataFC_l   = CREDIT_LIMIT_NP_DATA[7:0];
+                init1_np_dllp.dataFC_h   = 4'd0;
+                init1_np_dllp.dataFC_l   = 8'd0;
                 init1_np_dllp.hdrScale   = 2'b00;
                 init1_np_dllp.dataScale  = 2'b00;
 
@@ -190,7 +188,7 @@ always_comb begin
         end
         S_INIT1_WAIT: begin
             init1_send_n                 = 1'b1;
-            if (init1_cnt == 'd100) begin
+            if (init1_cnt == 'd1023) begin
                 init1_state_n            = S_INIT1_SEND_P;
                 init1_cnt_n              = 15'd0;
             end
@@ -268,8 +266,8 @@ always_comb begin
                 init2_np_dllp.dllp_type  = 8'b1101_0000;
                 init2_np_dllp.hdrFC_h    = CREDIT_LIMIT_NP_HEADER[7:2];
                 init2_np_dllp.hdrFC_l    = CREDIT_LIMIT_NP_HEADER[1:0];
-                init2_np_dllp.dataFC_h   = CREDIT_LIMIT_NP_DATA[11:8];
-                init2_np_dllp.dataFC_l   = CREDIT_LIMIT_NP_DATA[7:0];
+                init2_np_dllp.dataFC_h   = 4'd0;
+                init2_np_dllp.dataFC_l   = 8'd0;
                 init2_np_dllp.hdrScale   = 2'b00;
                 init2_np_dllp.dataScale  = 2'b00;
 
@@ -348,7 +346,7 @@ always_comb begin
         end
         S_INIT2_WAIT: begin
             init2_send_n                 = 1'b1;
-            if (init2_cnt == 'd100) begin
+            if (init2_cnt == 'd1023) begin
                 init2_state_n            = S_INIT2_SEND_P;
                 init2_cnt_n              = 15'd0;
             end
@@ -434,8 +432,8 @@ always_comb begin
                 active_updatefc_np_dllp.dllp_type  = 8'b1001_0000;
                 active_updatefc_np_dllp.hdrFC_h    = cc_np_h_i[7:2];
                 active_updatefc_np_dllp.hdrFC_l    = cc_np_h_i[1:0];
-                active_updatefc_np_dllp.dataFC_h   = cc_np_d_i[11:8];
-                active_updatefc_np_dllp.dataFC_l   = cc_np_d_i[7:0];
+                active_updatefc_np_dllp.dataFC_h   = 4'd0;
+                active_updatefc_np_dllp.dataFC_l   = 8'd0;
                 active_updatefc_np_dllp.hdrScale   = 2'b00;
                 active_updatefc_np_dllp.dataScale  = 2'b00;
 
@@ -527,7 +525,7 @@ always_comb begin
             end
         end
         S_ACTIVE_WAIT: begin
-            if (active_cnt == 'd100) begin
+            if (active_cnt == 'd1023) begin
                 active_state_n            = S_ACTIVE_IDLE;
                 active_cnt_n              = 15'd0;
             end
