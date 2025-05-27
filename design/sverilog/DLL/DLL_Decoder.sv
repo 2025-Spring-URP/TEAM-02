@@ -214,19 +214,13 @@ always_comb begin
                 8'b0100_0000: begin // init1 p
                     ep_cl_p_h_n = {4'd0, dllp_32B[29:24], dllp_32B[39:38]}; // p header credit limit
                     ep_cl_p_d_n = {dllp_32B[35:32], dllp_32B[47:40]};       // p data credit limit
-
-                    ep_cc_p_en_n = 1'b1;
                 end
                 8'b0101_0000: begin // init1 np
                     ep_cl_np_h_n = {4'd0, dllp_32B[29:24], dllp_32B[39:38]}; // np header credit limit
-                    
-                    ep_cc_np_en_n = 1'b1;
                 end
                 8'b0110_0000: begin // init1 cpl
                     ep_cl_cpl_h_n = {4'd0, dllp_32B[29:24], dllp_32B[39:38]}; // cpl header credit limit
                     ep_cl_cpl_d_n = {dllp_32B[35:32], dllp_32B[47:40]};       // cpl data credit limit
-
-                    ep_cc_cpl_en_n = 1'b1;
                 end
 
                 8'b1100_0000: begin // init2 p
@@ -242,13 +236,19 @@ always_comb begin
                 8'b1000_0000: begin // fc p
                     ep_cc_p_h_n = {4'd0, dllp_32B[29:24], dllp_32B[39:38]}; // p header credit consumed
                     ep_cc_p_d_n = {dllp_32B[35:32], dllp_32B[47:40]};       // p data credit consumed
+
+                    ep_cc_p_en_n = 1'b1;
                 end
                 8'b1001_0000: begin // fc np
                     ep_cc_np_h_n = {4'd0, dllp_32B[29:24], dllp_32B[39:38]}; // np header credit consumed
+                                        
+                    ep_cc_np_en_n = 1'b1;
                 end
                 8'b1010_0000: begin // fc cpl
                     ep_cc_cpl_h_n = {4'd0, dllp_32B[29:24], dllp_32B[39:38]}; // cpl header credit consumed
                     ep_cc_cpl_d_n = {dllp_32B[35:32], dllp_32B[47:40]};       // cpl data credit consumed
+                    
+                    ep_cc_cpl_en_n = 1'b1;
                 end
 
                 8'b0000_0000: begin // ack
