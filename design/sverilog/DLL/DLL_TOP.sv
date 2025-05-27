@@ -50,6 +50,16 @@ module DLL_TOP #(
 );
 
 
+localparam [2:0]                        IDLE        = 3'b000,
+                                        P_HDR       = 3'b001,
+                                        P_DATA      = 3'b010,
+                                        NP_HDR      = 3'b011,
+                                        RESERVED    = 3'b100,
+                                        CPL_HDR     = 3'b101,
+                                        CPL_DATA    = 3'b110,
+                                        DONE        = 3'b111;
+
+
 
 wire [1:0]                              DLCMSM_w; 
 wire                                    dllp_valid_w;
@@ -57,6 +67,39 @@ wire [PIPE_DATA_WIDTH-1:0]              dllp_data_w;
 wire                                    dllp_ready_w;
 wire [1:0]                              acknak_seq_num_w; // 2 bits for ACK/NAK sequence number
 wire [1:0]                              acknak_seq_en_w;  // 2 bits for ACK/NAK sequence enable
+
+wire [1:0]                              tl2dll_en_w;
+
+always_comb begin
+    case(tl2dll_en_i)
+    IDLE: begin
+        tl2dll_en_w = 2'b00; // IDLE state
+    end
+    P_HDR: begin
+        tl2dll_en_w = 2'b01; // Posted Header
+    end
+    P_DATA: begin
+        tl2dll_en_w = 2'b10; // Posted Data
+    end
+    NP_HDR: begin
+        tl2dll_en_w = 2'b01; // Non-Posted Header
+    end
+    RESERVED: begin
+        tl2dll_en_w = 2'b10; // Reserved state, no operation
+    end
+    CPL_HDR: begin
+        tl2dll_en_w = 2'b01; // Completion Headere
+    end
+    CPL_DATA: begin
+        tl2dll_en_w = 2'b10; // Completion Data
+    end
+    DONE: begin
+        tl2dll_en_w = 2'b11; // Done state, no operation
+    end
+    endcase
+end
+
+
 
 
 DLL_WR #(
@@ -69,7 +112,7 @@ DLL_WR #(
     .srst_n                             (srst_n),
     // TL
     .data_i                             (tl2dll_data_i),
-    .tl_d_en_i                          (tl2dll_en_i),
+    .tl_d_en_i                          (tl2dll_en_w),
     .retry_buffer_leftover_cnt_o        (retry_buffer_leftover_cnt_o),
 
     // DLL_RD
@@ -138,10 +181,8 @@ DLL_RD u_dll_rd (
 
     // PIPE -> DLL
     .pipe2dll_valid_i                   (pipe_rxvalid_i),  // input
-    .pipe2dll_data_i                    (pipe_rxdata_i),  // input [255:0]
+    .pipe2dll_data_i                    (pipe_rxdata_i)  // input [255:0]
 );
 
 
 endmodule
-
-
