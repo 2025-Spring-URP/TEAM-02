@@ -1,5 +1,5 @@
-`include "_PCIE_DLL_PKG.svh"
-import _PCIE_DLL_PKG::*;
+`include "PCIE_PKG.svh"
+import PCIE_PKG::*;
 
 module DLL_DLLP_Generator
 #(
