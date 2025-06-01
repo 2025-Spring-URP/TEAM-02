@@ -219,7 +219,7 @@ package PCIE_PKG;
         tlp_cpl_hdr.requester_id    = requester_id;
         tlp_cpl_hdr.tg_h            = tag[9];
         tlp_cpl_hdr.tg_m            = tag[8];
-        tlp_cpl_hdr.tag_l           = tag[7:0];
+        tlp_cpl_hdr.tag             = tag[7:0];
         tlp_cpl_hdr.lower_addr      = lower_addr;
         tlp_cpl_hdr.reserved        = reserved;
 
