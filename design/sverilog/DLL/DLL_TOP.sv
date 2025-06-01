@@ -42,6 +42,10 @@ module DLL_TOP #(
     output wire     [CREDIT_DEPTH-1:0]      ep_cl_cpl_d_o,
 	output wire                             ep_cl_en_o,
 
+    output wire                             updatefc_p_o,
+	output wire                             updatefc_np_o,
+	output wire                             updatefc_cpl_o,
+
     // PIPE Interface
     output  wire  [PIPE_DATA_WIDTH-1:0]     pipe_txdata_o,
     output  wire                            pipe_txvalid_o,
@@ -68,7 +72,7 @@ wire                                    dllp_ready_w;
 wire [1:0]                              acknak_seq_num_w; // 2 bits for ACK/NAK sequence number
 wire [1:0]                              acknak_seq_en_w;  // 2 bits for ACK/NAK sequence enable
 
-wire [1:0]                              tl2dll_en_w;
+reg  [1:0]                              tl2dll_en_w;
 
 always_comb begin
     case(tl2dll_en_i)
@@ -164,6 +168,10 @@ DLL_RD u_dll_rd (
     .ep_cl_cpl_h_o                      (ep_cl_cpl_h_o),  // output [11:0]
     .ep_cl_cpl_d_o                      (ep_cl_cpl_d_o),  // output [11:0]
     .ep_cl_en_o                         (ep_cl_en_o),  // output
+
+    .updatefc_p_o                       (updatefc_p_o),
+    .updatefc_np_o                      (updatefc_np_o),
+    .updatefc_cpl_o                     (updatefc_cpl_o),
 
     // Arbiter
     .arb_ready_i                        (dllp_ready_w),  // input
