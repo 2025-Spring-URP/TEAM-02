@@ -29,18 +29,18 @@ module PCIE_TOP #(
     // *** AXI Ports ***
 
     // AXI Master
-    ref  AXI4_A_IF #(AXI_ID_WIDTH, AXI_ADDR_WIDTH) aw_if_master,
-    ref  AXI4_A_IF #(AXI_ID_WIDTH, AXI_ADDR_WIDTH) ar_if_master,
-    ref  AXI4_W_IF #(AXI_ID_WIDTH, AXI_ADDR_WIDTH) w_if_master,
-    ref  AXI4_R_IF #(AXI_ID_WIDTH, AXI_ADDR_WIDTH) r_if_master,
-    ref  AXI4_B_IF #(AXI_ID_WIDTH, AXI_ADDR_WIDTH) b_if_master,
+    AXI4_A_IF aw_if_master,
+    AXI4_A_IF ar_if_master,
+    AXI4_W_IF w_if_master,
+    AXI4_R_IF r_if_master,
+    AXI4_B_IF b_if_master,
 
     // AXI Slave
-    ref  AXI4_A_IF #(AXI_ID_WIDTH, AXI_ADDR_WIDTH) aw_if_slave,
-    ref  AXI4_A_IF #(AXI_ID_WIDTH, AXI_ADDR_WIDTH) ar_if_slave,
-    ref  AXI4_W_IF #(AXI_ID_WIDTH, AXI_ADDR_WIDTH) w_if_slave,
-    ref  AXI4_R_IF #(AXI_ID_WIDTH, AXI_ADDR_WIDTH) r_if_slave,
-    ref  AXI4_B_IF #(AXI_ID_WIDTH, AXI_ADDR_WIDTH) b_if_slave
+    AXI4_A_IF aw_if_slave,
+    AXI4_A_IF ar_if_slave,
+    AXI4_W_IF w_if_slave,
+    AXI4_R_IF r_if_slave,
+    AXI4_B_IF b_if_slave
 );
 
 typedef enum logic [2:0] {
