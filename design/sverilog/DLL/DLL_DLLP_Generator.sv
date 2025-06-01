@@ -28,6 +28,9 @@ module DLL_DLLP_Generator
 	input 	wire	[11:0]		                    cc_np_h_i,		        // Non-Posted(Read) header credit consumed
 	input 	wire	[11:0]		                    cc_cpl_h_i,	            // Completion credit header consumed
     input 	wire	[11:0]		                    cc_cpl_d_i,	            // Completion credit data consumed
+    output  wire                                    updatefc_p_o,
+    output  wire                                    updatefc_np_o,
+    output  wire                                    updatefc_cpl_o,
 
     // Decoder
     input   wire                                    NAK_scheduled_i,        // CRC에러/SEQ에러 감지하면 1로 활성화돼서 들어옴
@@ -376,6 +379,8 @@ reg [15:0]                  active_crc_temp;
 reg [PIPE_DATA_WIDTH-1:0]   active_dllp_data;
 reg                         active_dllp_valid;
 
+reg updatefc_p, updatefc_np, updatefc_cpl;
+
 localparam                  S_ACTIVE_IDLE        = 4'd0,
                             S_ACTIVE_CRC_FC_P    = 4'd1,
                             S_ACTIVE_SEND_FC_P   = 4'd2,
@@ -407,6 +412,10 @@ always_comb begin
 
     active_dllp_data    = 'd0;
     active_dllp_valid   = 1'b0;
+
+    updatefc_p   = 'd0;
+    updatefc_np  = 'd0;
+    updatefc_cpl = 'd0;
 
     case (active_state)
         S_ACTIVE_IDLE: begin
@@ -466,7 +475,8 @@ always_comb begin
             active_dllp_valid             = 1'b1;
             active_dllp_data              = {192'd0, active_updatefc_p_dllp, 16'hACF0};
             if (arb_ready_i) begin
-                active_state_n                = S_ACTIVE_CRC_FC_NP;
+                updatefc_p                = 1'b1;
+                active_state_n            = S_ACTIVE_CRC_FC_NP;
             end
         end
         S_ACTIVE_CRC_FC_NP: begin
@@ -484,6 +494,7 @@ always_comb begin
             active_dllp_valid             = 1'b1;
             active_dllp_data              = {192'd0, active_updatefc_np_dllp, 16'hACF0};
             if (arb_ready_i) begin
+                updatefc_np               = 1'b1;
                 active_state_n                = S_ACTIVE_CRC_FC_CPL;
             end
         end
@@ -502,6 +513,7 @@ always_comb begin
             active_dllp_valid             = 1'b1;
             active_dllp_data              = {192'd0, active_updatefc_cpl_dllp, 16'hACF0};
             if (arb_ready_i) begin
+                updatefc_cpl               = 1'b1;
                 active_state_n                = S_ACTIVE_CRC_AN;
             end
         end
@@ -547,5 +559,9 @@ assign dllp_valid_o =   (DLCM_state_i == 2'd1) ? init1_dllp_valid :
 
 assign init1_send_o = init1_send;
 assign init2_send_o = init2_send;
+
+assign updatefc_p_o = updatefc_p;
+assign updatefc_np_o = updatefc_np;
+assign updatefc_cpl_o = updatefc_cpl;
 
 endmodule
