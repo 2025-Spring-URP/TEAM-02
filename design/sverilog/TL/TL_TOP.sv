@@ -131,8 +131,8 @@ module TL_TOP #(
 
 
     TL_AXI_MASTER #(
-        .ID_WIDTH                    (ID_WIDTH),
-        .ADDR_WIDTH                  (ADDR_WIDTH),
+        .AXI_ID_WIDTH                (AXI_ID_WIDTH),
+        .AXI_ADDR_WIDTH              (AXI_ADDR_WIDTH),
         .MAX_READ_REQ_SIZE           (MAX_READ_REQ_SIZE),
         .MAX_PAYLOAD_SIZE            (MAX_PAYLOAD_SIZE),
         .READ_COMPLETION_BOUNDARY    (READ_COMPLETION_BOUNDARY),
