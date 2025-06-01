@@ -87,6 +87,10 @@ wire [CREDIT_DEPTH-1:0]            ep_cl_cpl_h_o;           // Endpoint Completi
 wire [CREDIT_DEPTH-1:0]            ep_cl_cpl_d_o;           // Endpoint Completion data credit limit
 wire [2:0]                         ep_cl_en_o;              // Endpoint credit limit enable
 
+wire updatefc_p_o;
+wire updatefc_np_o;
+wire updatefc_cpl_o;
+
 TL_TOP #(
     .AXI_ID_WIDTH                 (AXI_ID_WIDTH),               // example: 4
     .AXI_ADDR_WIDTH               (AXI_ADDR_WIDTH),             // example: 64
@@ -146,6 +150,10 @@ TL_TOP #(
     .cc_nh_o                      (cc_np_h_o),                  // output [11:0]
     .cc_ch_o                      (cc_cpl_h_o),                 // output [11:0]
     .cc_cd_o                      (cc_cpl_d_o),                 // output [11:0]
+
+	.updatefc_p_i                 (updatefc_p_o),
+    .updatefc_np_i                (updatefc_np_o),
+    .updatefc_cpl_i               (updatefc_cpl_o),
 
     // Retry Monitor
     .retry_buffer_leftover_cnt_i (retry_buffer_leftover_cnt_w),  // output [RETRY_DEPTH_LG2-1:0]
