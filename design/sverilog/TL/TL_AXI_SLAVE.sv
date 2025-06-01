@@ -60,7 +60,7 @@ module TL_AXI_SLAVE #(
     output  wire            cpl_data_full_o,
     input   wire    [255:0] cpl_data_wdata_i,
     input   wire            cpl_data_wren_i,
-    output  wire            cpl_data_rden_o,
+    output  wire            cpl_data_rden_o
 );
 
 /*
