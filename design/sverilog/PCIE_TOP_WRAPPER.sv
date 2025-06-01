@@ -102,19 +102,17 @@ module PCIE_TOP_WRAPPER #
 );
     import PCIE_PKG::*;
 
-    // AXI Master
-    AXI4_A_IF aw_if_master;
-    AXI4_A_IF ar_if_master;
-    AXI4_W_IF w_if_master;
-    AXI4_R_IF r_if_master;
-    AXI4_B_IF b_if_master;
+    AXI4_A_IF aw_if_master   ();
+    AXI4_A_IF ar_if_master   ();
+    AXI4_W_IF w_if_master    ();
+    AXI4_R_IF r_if_master    ();
+    AXI4_B_IF b_if_master    ();
 
-    // AXI Slave
-    AXI4_A_IF aw_if_slave;
-    AXI4_A_IF ar_if_slave;
-    AXI4_W_IF w_if_slave;
-    AXI4_R_IF r_if_slave;
-    AXI4_B_IF b_if_slave;
+    AXI4_A_IF aw_if_slave    ();
+    AXI4_A_IF ar_if_slave    ();
+    AXI4_W_IF w_if_slave     ();
+    AXI4_R_IF r_if_slave     ();
+    AXI4_B_IF b_if_slave     ();
 
 
 
