@@ -149,8 +149,8 @@ module PCIE_TOP_WRAPPER #
         .CREDIT_DEPTH               (12)
     ) u_pcie_top (
         .clk                        (clk),
-        .rst_n                      (rst_n),
-        .config_bdf_i               (config_bdf_i),
+        .rst_n                      (!rst),
+        .config_bdf_i               (16'h0000),
         .pipe_txdata                (pipe_txdata),
         .pipe_txvalid               (pipe_txvalid),
         .pipe_rxdata                (pipe_rxdata),
