@@ -2,10 +2,13 @@
 
 ${PCIE_HOME}/design/sverilog/PCIE_PKG.svh
 ${PCIE_HOME}/design/sverilog/AXI4_IF.sv
+${PCIE_HOME}/design/sverilog/PCIE_TOP.sv
+${PCIE_HOME}/design/sverilog/PCIE_TOP_WRAPPER.sv
 ${PCIE_HOME}/design/sverilog/SAL_FIFO.sv
 ${PCIE_HOME}/design/sverilog/SAL_SDP_RAM.sv
-// User Adds
-${PCIE_HOME}/design/sverilog/DLL_TOP.sv
+
+
+${PCIE_HOME}/design/sverilog/DLL/DLL_TOP.sv
 
 ${PCIE_HOME}/design/sverilog/DLL/DLL_Packetizer_v1.sv
 ${PCIE_HOME}/design/sverilog/DLL/DLL_Retry_Monitor.sv
