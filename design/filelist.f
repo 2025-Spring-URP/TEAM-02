@@ -16,3 +16,10 @@ ${PCIE_HOME}/design/sverilog/DLL/DLL_Decoder.sv
 ${PCIE_HOME}/design/sverilog/DLL/DLL_DLLP_Generator.sv
 ${PCIE_HOME}/design/sverilog/DLL/DLL_DLCMSM.sv
 ${PCIE_HOME}/design/sverilog/DLL/DLL_RD.sv
+
+${PCIE_HOME}/design/sverilog/TL/TL_TOP.sv
+${PCIE_HOME}/design/sverilog/TL/TL_AXI_MASTER.sv
+${PCIE_HOME}/design/sverilog/TL/TL_AXI_SLAVE.sv
+${PCIE_HOME}/design/sverilog/TL/TL_FLOW_CONTROL.sv
+${PCIE_HOME}/design/sverilog/TL/TL_FIFO.sv
+${PCIE_HOME}/design/sverilog/TL/TL_CNT.sv
