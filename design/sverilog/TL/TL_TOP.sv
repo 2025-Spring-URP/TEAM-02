@@ -73,10 +73,6 @@ module TL_TOP #(
     // Retry Buffer Leftover Count, Unit: DW
     input  wire  [RETRY_DEPTH_LG2+2:0] retry_buffer_leftover_cnt_i,
 
-    // DLL Output
-    output  wire    [255:0] tlp_o,     // 256-bit TLP DW
-    output  wire      [2:0] req_o,     // 3-bit Req code
-
     // Link Status
     input  wire             link_active_i
 
@@ -96,29 +92,34 @@ module TL_TOP #(
     // Internal Wires
     
     // P Header FIFO related
-    wire                p_hdr_full;        // TL_AXI_MASTER.tx → TL_FLOW_CONTROL.rx
-    wire [127:0]        p_hdr_rdata;       // TL_AXI_MASTER.tx → TL_FLOW_CONTROL.rx
-    wire                p_hdr_rden;        // TL_TOP 중계
+    wire                p_hdr_full;
+    wire [127:0]        p_hdr_rdata;
+    wire                p_hdr_rden; 
+    wire                p_hdr_empty;
 
     // P Data FIFO related
-    wire                p_data_full;       // TL_AXI_MASTER.tx → TL_FLOW_CONTROL.rx
-    wire [255:0]        p_data_rdata;      // TL_AXI_MASTER.tx → TL_FLOW_CONTROL.rx
-    wire                p_data_rden;       // TL_TOP 중계
+    wire                p_data_full;
+    wire [255:0]        p_data_rdata;
+    wire                p_data_rden;
+    wire                p_data_empty;
 
     // NP Header FIFO related
-    wire                np_hdr_full;       // TL_AXI_SLAVE.tx → TL_FLOW_CONTROL.rx
-    wire [127:0]        np_hdr_rdata;      // TL_AXI_SLAVE.tx → TL_FLOW_CONTROL.rx
-    wire                np_hdr_rden;       // TL_TOP 중계
+    wire                np_hdr_full;
+    wire [127:0]        np_hdr_rdata;
+    wire                np_hdr_rden;   
+    wire                np_hdr_empty;
 
     // Completion Header FIFO related
-    wire                cpl_hdr_empty;     // TL_FLOW_CONTROL.tx → TL_AXI_SLAVE.rx
-    wire [95:0]         cpl_hdr_rdata;     // TL_FLOW_CONTROL.tx → TL_AXI_SLAVE.rx
-    wire                cpl_hdr_rden;      // TL_TOP 중계
+    wire                cpl_hdr_empty;
+    wire [95:0]         cpl_hdr_rdata;
+    wire                cpl_hdr_rden;
+    wire                cpl_hdr_full;
 
     // Completion Data FIFO related
-    wire                cpl_data_empty;    // TL_FLOW_CONTROL.tx → TL_AXI_SLAVE.rx
-    wire [255:0]        cpl_data_rdata;    // TL_FLOW_CONTROL.tx → TL_AXI_SLAVE.rx
-    wire                cpl_data_rden;     // TL_TOP 중계
+    wire                cpl_data_empty;
+    wire [255:0]        cpl_data_rdata;
+    wire                cpl_data_rden;
+    wire                cpl_data_full;
 
     // Payload counters
     wire [TX_DEPTH_LG2-1:0]  p_payload_cnt;  // TL_AXI_SLAVE.tx → TL_FLOW_CONTROL.rx
@@ -190,7 +191,7 @@ module TL_TOP #(
         .READ_COMPLETION_BOUNDARY    (128),
         .RX_DEPTH_LG2                (4),
         .TX_DEPTH_LG2                (3)
-    ) u_TL_AXI_SLAVE (
+    ) u_tl_axi_slave (
         .clk                         (clk),
         .rst_n                       (rst_n),
         .config_bdf_i                (config_bdf_i),
@@ -230,8 +231,8 @@ module TL_TOP #(
         // Rx Cpl Data FIFO
         .cpl_data_full_o             (cpl_data_full),
         .cpl_data_wdata_i            (tlp_i),
-        .cpl_data_wren_i             (req_i == CPL_HDR),
-        .cpl_data_rden_o             (cpl_data_rden),
+        .cpl_data_wren_i             (req_i == CPL_DATA),
+        .cpl_data_rden_o             (cpl_data_rden)
     );
 
     TL_FLOW_CONTROL #(
