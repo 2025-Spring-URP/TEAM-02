@@ -42,36 +42,43 @@ module TL_TOP #(
     input   wire    [255:0]     tlp_i,
     input   wire    [2:0]       req_i,
 
-    // Tx Credit Consumed
-    input   wire    [11:0]      cc_ph_i,
-    input   wire    [11:0]      cc_pd_i,
-    input   wire                cc_p_en_i,
-    input   wire    [11:0]      cc_nh_i,
-    input   wire                cc_np_en_i,
-    input   wire    [11:0]      cc_ch_i,
-    input   wire    [11:0]      cc_cd_i,
-    input   wire                cc_cpl_en_i,
+    // UpdateFC from DLL, Rx Credit Consumed
+    output  wire    [11:0]  cc_ph_o,
+    output  wire    [11:0]  cc_pd_o,
+    input   wire            updatefc_p_i,
+    output  wire    [11:0]  cc_nh_o,
+    input   wire            updatefc_np_i,
+    output  wire    [11:0]  cc_ch_o,
+    output  wire    [11:0]  cc_cd_o,
+    input   wire            updatefc_cpl_i,
+    
+    // Credit Limit from DLL - InitFC
+    input   wire    [11:0]  cl_ph_i,
+    input   wire    [11:0]  cl_pd_i,
+    input   wire    [11:0]  cl_nh_i,
+    input   wire    [11:0]  cl_ch_i,
+    input   wire    [11:0]  cl_cd_i,
+    input   wire            cl_en_i,
 
-    // Tx Credit Limit
-    input   wire    [11:0]      cl_ph_i,
-    input   wire    [11:0]      cl_pd_i,
-    input   wire    [11:0]      cl_nh_i,
-    input   wire    [11:0]      cl_ch_i,
-    input   wire    [11:0]      cl_cd_i,
-    input   wire                cl_en_i,
+    // Credit Consumed from DLL - UpdateFC
+    input   wire    [11:0]  cc_ph_i,
+    input   wire    [11:0]  cc_pd_i,
+    input   wire            cc_p_en_i,
+    input   wire    [11:0]  cc_nh_i,
+    input   wire            cc_np_en_i,
+    input   wire    [11:0]  cc_ch_i,
+    input   wire    [11:0]  cc_cd_i,
+    input   wire            cc_cpl_en_i,
 
-    // Rx Credit Consumed
-    output  wire    [11:0]      cc_ph_o,
-    output  wire    [11:0]      cc_pd_o,
-    output  wire    [11:0]      cc_nh_o,
-    output  wire    [11:0]      cc_ch_o,
-    output  wire    [11:0]      cc_cd_o,
+    // Retry Buffer Leftover Count, Unit: DW
+    input  wire  [RETRY_DEPTH_LG2+2:0] retry_buffer_leftover_cnt_i,
 
-    // Retry Leftover Count (8DW)
-    input   wire    [RETRY_DEPTH_LG2+2:0]   retry_buffer_leftover_cnt_i,
+    // DLL Output
+    output  wire    [255:0] tlp_o,     // 256-bit TLP DW
+    output  wire      [2:0] req_o,     // 3-bit Req code
 
-    // Link Active
-    input   wire                link_active_i
+    // Link Status
+    input  wire             link_active_i
 
 );
 
@@ -267,12 +274,15 @@ module TL_TOP #(
         .np_hdr_rden_i                  (np_hdr_rden),
         .cpl_hdr_rden_i                 (cpl_hdr_rden),
         .cpl_data_rden_i                (cpl_data_rden),
-        // Credit Consumed Output
+        // UpdateFC from DLL, Credit Consumed
         .cc_ph_o                        (cc_ph_o),
         .cc_pd_o                        (cc_pd_o),
+        .updatefc_p_i                   (updatefc_p_i),
         .cc_nh_o                        (cc_nh_o),
+        .updatefc_np_i                  (updatefc_np_i),
         .cc_ch_o                        (cc_ch_o),
         .cc_cd_o                        (cc_cd_o),
+        .updatefc_cpl_i                 (updatefc_cpl_i),
         // Credit Limit from DLL - InitFC
         .cl_ph_i                        (cl_ph_i),
         .cl_pd_i                        (cl_pd_i),
@@ -300,8 +310,5 @@ module TL_TOP #(
         // Link Status
         .link_active_i                  (link_active_i)
     );
-
-
-
 
 endmodule

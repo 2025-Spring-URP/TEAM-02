@@ -44,12 +44,15 @@ module TL_FLOW_CONTROL #(
     input   wire            cpl_hdr_rden_i,
     input   wire            cpl_data_rden_i,
 
-    // Credit Consumed Output
+    // UpdateFC from DLL, Credit Consumed
     output  wire    [11:0]  cc_ph_o,
     output  wire    [11:0]  cc_pd_o,
+    input   wire            updatefc_p_i,
     output  wire    [11:0]  cc_nh_o,
+    input   wire            updatefc_np_i,
     output  wire    [11:0]  cc_ch_o,
     output  wire    [11:0]  cc_cd_o,
+    input   wire            updatefc_cpl_i,
     
     // Credit Limit from DLL - InitFC
     input   wire    [11:0]  cl_ph_i,
@@ -59,7 +62,7 @@ module TL_FLOW_CONTROL #(
     input   wire    [11:0]  cl_cd_i,
     input   wire            cl_en_i,
 
-    // Credit Consumed Return from DLL - UpdateFC
+    // Credit Consumed from DLL - UpdateFC
     input   wire    [11:0]  cc_ph_i,
     input   wire    [11:0]  cc_pd_i,
     input   wire            cc_p_en_i,
@@ -235,7 +238,7 @@ module TL_FLOW_CONTROL #(
             end
             else if (~np_hdr_empty_i & link_active_i) begin
                 if (
-                    cc_nh + nh_cnt < cl_nh_i - HEADER_MARGIN &
+                    'd1 < nh_available &
                     (retry_buffer_leftover_cnt_i >> 3) + 'd1 < (1 << RETRY_DEPTH_LG2)
                 ) begin
                     fstate_n = NP_HDR;
@@ -329,6 +332,84 @@ module TL_FLOW_CONTROL #(
         endcase
     end
 
-    // Credit Returned Counter
+    // Credit Consumed Management for UpdateFC
+    logic [11:0]    cc_ph, cc_nh, cc_ch;
+    logic [11:0]    cc_pd, cc_cd;
+
+    assign cc_ph_o = cc_ph;
+    assign cc_pd_o = cc_pd;
+    assign cc_nh_o = cc_nh;
+    assign cc_ch_o = cc_ch;
+    assign cc_cd_o = cc_cd;
+
+    always_ff @(posedge clk)
+        if (!rst_n) begin
+            cc_ph <= 'd0;
+            cc_pd <= 'd0;
+            cc_nh <= 'd0;
+            cc_ch <= 'd0;
+            cc_cd <= 'd0;
+        end
+        else begin
+            if (updatefc_p_i) begin
+                if (p_hdr_rden_i) begin
+                    cc_ph <= 'd1;
+                end
+                else begin
+                    cc_ph <= 'd0;
+                end
+                if (p_data_rden_i) begin
+                    cc_pd <= 'd2;
+                end
+                else begin
+                    cc_pd <= 'd0;
+                end
+            end
+            else begin
+                if (p_hdr_rden_i) begin
+                    cc_ph <= cc_ph + 'd1;
+                end
+                if (p_data_rden_i) begin
+                    cc_pd <= cc_pd + 'd2;
+                end
+            end
+
+            if (updatefc_np_i) begin
+                if (np_hdr_rden_i) begin
+                    cc_nh <= 'd1;
+                end
+                else begin
+                    cc_nh <= 'd0;
+                end
+            end
+            else begin
+                if (np_hdr_rden_i) begin
+                    cc_nh <= cc_nh + 'd1;
+                end
+            end
+
+            if (updatefc_cpl_i) begin
+                if (cpl_hdr_rden_i) begin
+                    cc_ch <= 'd1;
+                end
+                else begin
+                    cc_ch <= 'd0;
+                end
+                if (cpl_data_rden_i) begin
+                    cc_cd <= 'd2;
+                end
+                else begin
+                    cc_cd <= 'd0;
+                end
+            end
+            else begin
+                if (cpl_hdr_rden_i) begin
+                    cc_ch <= cc_ch + 'd1;
+                end
+                if (cpl_data_rden_i) begin
+                    cc_cd <= cc_cd + 'd2;
+                end
+            end
+        end
 
 endmodule

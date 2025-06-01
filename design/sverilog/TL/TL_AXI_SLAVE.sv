@@ -424,7 +424,7 @@ module TL_AXI_SLAVE #(
         .DEPTH_LG2     (RX_DEPTH_LG2),  // FIFO depth: 16
         .DATA_WIDTH    (96),            // Data Width: 12B / 96bit / 3DW
         .RDATA_FF_OUT  (0),             // No Read Data FF
-        .USE_CNT       (1)              // w/ Counter
+        .USE_CNT       (0)              // w/ Counter
     ) u_rx_cpl_hdr_fifo (
         .clk           (clk),
         .rst_n         (rst_n),
@@ -437,7 +437,7 @@ module TL_AXI_SLAVE #(
         .rden_i        (cpl_hdr_rden),
         .rdata_o       (cpl_hdr),
 
-        .cnt_o         (cpl_hdr_cnt_o),
+        .cnt_o         (),
         .debug_o       (cpl_hdr_debug)
     );
 
@@ -446,7 +446,7 @@ module TL_AXI_SLAVE #(
         .DEPTH_LG2     (RX_DEPTH_LG2),  // FIFO depth: 16
         .DATA_WIDTH    (256),           // Data Width: 16B / 128bit / 4DW
         .RDATA_FF_OUT  (0),             // No Read Data FF
-        .USE_CNT       (1)              // w/ Counter
+        .USE_CNT       (0)              // w/ Counter
     ) u_rx_cpl_data_fifo (
         .clk           (clk),
         .rst_n         (rst_n),
@@ -459,7 +459,7 @@ module TL_AXI_SLAVE #(
         .rden_i        (cpl_data_rden),
         .rdata_o       (r_if.rdata),
 
-        .cnt_o         (cpl_data_cnt_o),
+        .cnt_o         (),
         .debug_o       (cpl_data_debug)
     );
 
