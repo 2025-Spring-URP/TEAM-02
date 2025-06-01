@@ -256,8 +256,4 @@ assign s_axi_rdata            = r_if_slave.rdata;
 assign s_axi_rresp            = r_if_slave.rresp;
 assign s_axi_rlast            = r_if_slave.rlast;
 
-
-
-    assign  pipe_txdata             = txdata;
-    assign  pipe_txvalid            = txvalid;
 endmodule
