@@ -47,7 +47,7 @@ module TL_AXI_SLAVE #(
     input   wire            p_data_rden_i,
 
     // Tx P Payload Counter
-    output  wire    [TX_DEPTH_LG2-1:0]  p_payload_cnt_o,
+    output  wire    [TX_DEPTH_LG2:0]  p_payload_cnt_o,
     input   wire            p_sent_i,
 
     // Rx Cpl Header FIFO

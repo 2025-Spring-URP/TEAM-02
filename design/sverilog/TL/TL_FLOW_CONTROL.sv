@@ -23,7 +23,7 @@ module TL_FLOW_CONTROL #(
     input   wire    [127:0] np_hdr_rdata_i,
     output  wire            np_hdr_rden_o,
     // Posted TLP Payload Count
-    input   wire    [TX_DEPTH_LG2-1:0]  p_payload_cnt_i,
+    input   wire    [TX_DEPTH_LG2:0]  p_payload_cnt_i,
     output  wire            p_sent_o,
     // Completion Header
     input   wire            cpl_hdr_empty_i,
@@ -34,7 +34,7 @@ module TL_FLOW_CONTROL #(
     input   wire    [255:0] cpl_data_rdata_i,
     output  wire            cpl_data_rden_o,
     // Completion TLP Payload Count
-    input   wire    [TX_DEPTH_LG2-1:0]  cpl_payload_cnt_i,
+    input   wire    [TX_DEPTH_LG2:0]  cpl_payload_cnt_i,
     output  wire            cpl_sent_o,
 
     // ** Rx FIFOs

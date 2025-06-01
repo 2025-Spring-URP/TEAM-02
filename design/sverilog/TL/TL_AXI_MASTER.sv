@@ -2,8 +2,8 @@
 // Wongi Choi (cwg43352@g.skku.edu)
 
 module TL_AXI_MASTER #(
-    parameter ID_WIDTH     = 4,
-    parameter ADDR_WIDTH   = 64,
+    parameter AXI_ID_WIDTH     = 4,
+    parameter AXI_ADDR_WIDTH   = 64,
     parameter MAX_READ_REQ_SIZE = 512,
     parameter MAX_PAYLOAD_SIZE = 128,
     parameter READ_COMPLETION_BOUNDARY = 128,
@@ -60,7 +60,7 @@ module TL_AXI_MASTER #(
     input   wire            cpl_data_rden_i,
 
     // Tx Cpl Payload Counter
-    output  wire    [TX_DEPTH_LG2-1:0]  cpl_payload_cnt_o,
+    output  wire    [TX_DEPTH_LG2:0]  cpl_payload_cnt_o,
     input   wire            cpl_sent_i
 );
 
@@ -102,9 +102,9 @@ module TL_AXI_MASTER #(
     wire [31:0]     cpl_data_debug;
 
     wire            ar_full;
-    wire [ADDR_WIDTH + ID_WIDTH + 8 - 1: 0] ar_wdata;
+    wire [AXI_ADDR_WIDTH + AXI_ID_WIDTH + 8 - 1: 0] ar_wdata;
     wire            ar_empty;
-    wire [ADDR_WIDTH + ID_WIDTH + 8 - 1: 0] ar_rdata;
+    wire [AXI_ADDR_WIDTH + AXI_ID_WIDTH + 8 - 1: 0] ar_rdata;
     wire            ar_rden;
     wire [31:0]     ar_debug;
 
@@ -117,9 +117,9 @@ module TL_AXI_MASTER #(
     assign p_hdr_awlen = ({p_hdr.length_h, p_hdr.length_l} >> 3) - 1;
     wire [9:0]     p_hdr_tag;
     assign p_hdr_tag = {p_hdr.tg_h, p_hdr.tg_m, p_hdr.tag};
-    wire [ID_WIDTH-1:0]     p_hdr_awid;
+    wire [AXI_ID_WIDTH-1:0]     p_hdr_awid;
     assign p_hdr_awid = p_hdr_tag[9:6];
-    wire [ADDR_WIDTH-1:0]       p_hdr_awaddr;
+    wire [AXI_ADDR_WIDTH-1:0]       p_hdr_awaddr;
     assign p_hdr_awaddr = {p_hdr.addr_h, p_hdr.addr_m, p_hdr.addr_l, 2'b00};
     
     typedef enum logic {
@@ -130,7 +130,7 @@ module TL_AXI_MASTER #(
 
     // AXI Burst Transfer Control
     logic [7:0] wcnt, wcnt_n;
-    logic [ID_WIDTH-1:0] wid, wid_n;
+    logic [AXI_ID_WIDTH-1:0] wid, wid_n;
     logic p_hdr_rden, p_data_rden;
     logic awvalid, wvalid, wlast, bready;
 
@@ -163,7 +163,7 @@ module TL_AXI_MASTER #(
     logic   [11:0]  byte_count, byte_count_n;
     logic   [15:0]  np_req_id, np_req_id_n;
     logic   [9:0]   np_req_tag, np_req_tag_n;
-    logic   [ADDR_WIDTH-1:0]    araddr, araddr_n;
+    logic   [AXI_ADDR_WIDTH-1:0]    araddr, araddr_n;
     wire    [6:0]   lower_addr;
     assign lower_addr = araddr[6:0];
     logic   [7:0]               arlen, arlen_n;
@@ -354,7 +354,7 @@ module TL_AXI_MASTER #(
 
     TL_FIFO #(
         .DEPTH_LG2     (RX_DEPTH_LG2),  // FIFO depth
-        .DATA_WIDTH    (ADDR_WIDTH + ID_WIDTH + 8), // Data Width: 64 + 4 + 8
+        .DATA_WIDTH    (AXI_ADDR_WIDTH + AXI_ID_WIDTH + 8), // Data Width: 64 + 4 + 8
         .RDATA_FF_OUT  (0),             // No Read Data FF
         .USE_CNT       (0)              // w/o Counter
     ) u_ar_fifo (
@@ -376,8 +376,8 @@ module TL_AXI_MASTER #(
     assign ar_wdata = {araddr, np_req_tag[9:6], arlen};
 
     assign ar_if.avalid = !ar_empty;
-    assign ar_if.aid = ar_rdata[ID_WIDTH+8-1:8];
-    assign ar_if.aaddr = ar_rdata[ADDR_WIDTH+ID_WIDTH+8-1:ID_WIDTH+8];
+    assign ar_if.aid = ar_rdata[AXI_ID_WIDTH+8-1:8];
+    assign ar_if.aaddr = ar_rdata[AXI_ADDR_WIDTH+AXI_ID_WIDTH+8-1:AXI_ID_WIDTH+8];
     assign ar_if.alen = ar_rdata[8-1:0];
     assign ar_if.asize = 3'd5; // 32B
     assign ar_if.aburst = 2'b01; // Incremental
