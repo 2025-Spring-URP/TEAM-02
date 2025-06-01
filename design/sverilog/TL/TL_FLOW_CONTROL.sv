@@ -317,7 +317,7 @@ module TL_FLOW_CONTROL #(
             end
             else if (~np_hdr_empty_i & link_active_i) begin
                 if (
-                    cc_nh + nh_cnt < cl_nh_i - HEADER_MARGIN &
+                    'd1 < nh_available &
                     (retry_buffer_leftover_cnt_i >> 3) + 'd1 < (1 << RETRY_DEPTH_LG2)
                 ) begin
                     fstate_n = NP_HDR;
