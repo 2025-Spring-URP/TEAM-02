@@ -17,7 +17,6 @@ module DLL_TOP #(
 	input wire      [CREDIT_DEPTH-1:0]      cc_p_h_i,		        // Posted(Write) header credit consumed
     input wire      [CREDIT_DEPTH-1:0]      cc_p_d_i,		        // Posted(Write) data credit consumed
 	input wire      [CREDIT_DEPTH-1:0]      cc_np_h_i,		    // Non-Posted(Read) header credit consumed
-    input wire      [CREDIT_DEPTH-1:0]      cc_np_d_i,		    // Non-Posted(Read) data credit consumed
 	input wire      [CREDIT_DEPTH-1:0]      cc_cpl_h_i,	        // Completion credit header consumed
     input wire      [CREDIT_DEPTH-1:0]      cc_cpl_d_i,           // Completion credit data consumed
 
