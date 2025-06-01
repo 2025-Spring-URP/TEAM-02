@@ -113,14 +113,16 @@ module TL_AXI_MASTER #(
 
     wire [7:0]                  p_hdr_awlen;
     assign p_hdr_awlen = ({p_hdr.length_h, p_hdr.length_l} >> 3) - 1;
+    wire [9:0]     p_hdr_tag;
+    assign p_hdr_tag = {p_hdr.tg_h, p_hdr.tg_m, p_hdr.tag};
     wire [ID_WIDTH-1:0]     p_hdr_awid;
-    assign p_hdr_awid = {p_hdr.tg_h, p_hdr.tg_m, p_hdr.tag}[9:6];
+    assign p_hdr_awid = p_hdr_tag[9:6];
     wire [ADDR_WIDTH-1:0]       p_hdr_awaddr;
     assign p_hdr_awaddr = {p_hdr.addr_h, p_hdr.addr_m, p_hdr.addr_l, 2'b00};
     
     typedef enum logic {
         HEADER,
-        PAYLOAD,
+        PAYLOAD
     } pstate_t;
     pstate_t pstate, pstate_n;
 
