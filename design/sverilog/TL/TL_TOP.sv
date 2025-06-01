@@ -9,7 +9,7 @@ module TL_TOP #(
     parameter READ_COMPLETION_BOUNDARY  = 128,
     parameter RX_DEPTH_LG2      = 4,
     parameter TX_DEPTH_LG2      = 3,
-    parameter RETRY_DEPTH_LG2   = 8,
+    parameter RETRY_DEPTH_LG2   = 8
 )
 (
     input   wire            clk,
