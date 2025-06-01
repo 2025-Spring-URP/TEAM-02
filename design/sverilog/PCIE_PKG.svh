@@ -63,13 +63,13 @@ package PCIE_PKG;
     typedef struct packed {                                 // pg 154
         logic                reserved;         // [95]          MSB
         logic   [6:0]        lower_addr;       // [94:88]
-        logic   [7:0]        tag_l;            // [87:80]
+        logic   [7:0]        tag;              // [87:80]
         logic   [15:0]       requester_id;     // [79:64]
 
-        logic   [7:0]        byte_cnt_l;       // [63:56]
+        logic   [7:0]        byte_count_l;     // [63:56]
         logic   [2:0]        cpl_status;       // [55:53]
         logic                bcm;              // [52]
-        logic   [3:0]        byte_cnt_h;       // [51:48]
+        logic   [3:0]        byte_count_h;     // [51:48]
         logic   [15:0]       completer_id;     // [47:32]
 
         logic   [7:0]        length_l;         // [31:24]
@@ -78,9 +78,9 @@ package PCIE_PKG;
         logic   [1:0]        attr_l;           // [21:20]
         logic   [1:0]        at;               // [19:18]
         logic   [1:0]        length_h;         // [17:16]
-        logic                tag_h;            // [15]
+        logic                tg_h;             // [15]
         logic   [2:0]        tc;               // [14:12]
-        logic                tag_m;            // [11]
+        logic                tg_m;             // [11]
         logic                attr_h;           // [10]
         logic                ln;               // [9]
         logic                th;               // [8]
