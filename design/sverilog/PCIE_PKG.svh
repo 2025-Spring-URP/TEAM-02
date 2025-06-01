@@ -214,11 +214,11 @@ package PCIE_PKG;
         tlp_cpl_hdr.completer_id    = completer_id;
         tlp_cpl_hdr.cpl_status      = cpl_status;
         tlp_cpl_hdr.bcm             = bcm;
-        tlp_cpl_hdr.byte_cnt_h      = byte_cnt[11:8];
-        tlp_cpl_hdr.byte_cnt_l      = byte_cnt[7:0];
+        tlp_cpl_hdr.byte_count_h    = byte_cnt[11:8];
+        tlp_cpl_hdr.byte_count_l    = byte_cnt[7:0];
         tlp_cpl_hdr.requester_id    = requester_id;
-        tlp_cpl_hdr.tag_h           = tag[9];
-        tlp_cpl_hdr.tag_m           = tag[8];
+        tlp_cpl_hdr.tg_h            = tag[9];
+        tlp_cpl_hdr.tg_m            = tag[8];
         tlp_cpl_hdr.tag_l           = tag[7:0];
         tlp_cpl_hdr.lower_addr      = lower_addr;
         tlp_cpl_hdr.reserved        = reserved;
@@ -471,6 +471,7 @@ package PCIE_PKG;
     256'hC900_CF7C_9220_8530_3C3E_FCE9_4B6D_A1C8_9712_7CA2_AFE2_42D5_5A17_68F9_397A_D8A5,   // [1]
     256'hB8FF_BAD4_71E0_7CEF_EBEA_5458_C6DB_60B8_72F1_D461_9AA1_C1B3_360D_27A8_E8D6_4863};  // [0]
 
+    /*
     function automatic logic is_static0_err(cxl_flit_payload_t p);
         is_static0_err                  = 1'b0;
         if (is_llcrd_flit(p) | is_retry_flit(p) | is_init_flit(p)) begin
@@ -480,6 +481,7 @@ package PCIE_PKG;
             is_static0_err                  = (payload.static0 != 24'd0);
         end
     endfunction
+    */
 
 endpackage
 
