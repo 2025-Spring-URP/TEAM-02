@@ -122,10 +122,10 @@ module TL_TOP #(
     wire                cpl_data_full;
 
     // Payload counters
-    wire [TX_DEPTH_LG2-1:0]  p_payload_cnt;  // TL_AXI_SLAVE.tx → TL_FLOW_CONTROL.rx
+    wire [TX_DEPTH_LG2:0]  p_payload_cnt;  // TL_AXI_SLAVE.tx → TL_FLOW_CONTROL.rx
     wire                     p_sent;         // TL_FLOW_CONTROL.tx → TL_AXI_SLAVE.rx
 
-    wire [TX_DEPTH_LG2-1:0]  cpl_payload_cnt; // TL_FLOW_CONTROL.tx → TL_AXI_SLAVE.rx
+    wire [TX_DEPTH_LG2:0]  cpl_payload_cnt; // TL_FLOW_CONTROL.tx → TL_AXI_SLAVE.rx
     wire                     cpl_sent;        // TL_FLOW_CONTROL.tx → TL_AXI_SLAVE.rx
 
 
