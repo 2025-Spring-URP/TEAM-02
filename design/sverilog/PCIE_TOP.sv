@@ -199,6 +199,10 @@ DLL_TOP #(
     .ep_cl_cpl_d_o                  (ep_cl_cpl_d_o),            // output [CREDIT_DEPTH-1:0]
     .ep_cl_en_o                     (ep_cl_en_o),               // output
 
+	.updatefc_p_o                   (updatefc_p_o),
+    .updatefc_np_o                  (updatefc_np_o),
+    .updatefc_cpl_o                 (updatefc_cpl_o),
+
     // PIPE Interface
     .pipe_txdata_o                  (pipe_txdata),               // output [PIPE_DATA_WIDTH-1:0]
     .pipe_txvalid_o                 (pipe_txvalid),              // output
