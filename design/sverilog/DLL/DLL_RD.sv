@@ -30,6 +30,10 @@ module DLL_RD(
     output wire [11:0] ep_cl_cpl_d_o,
 	output wire ep_cl_en_o,
 
+	output wire updatefc_p_o,
+	output wire updatefc_np_o,
+	output wire updatefc_cpl_o,
+
 	// arbiter (dll to pipe)
 	input wire arb_ready_i,
 
@@ -87,6 +91,10 @@ DLL_DLLP_Generator dllp_generator
 	.cc_np_h_i(cc_np_h_i),
 	.cc_cpl_h_i(cc_cpl_h_i),
 	.cc_cpl_d_i(cc_cpl_d_i),
+
+	.updatefc_p_o(updatefc_p_o),
+	.updatefc_np_o(updatefc_np_o),
+	.updatefc_cpl_o(updatefc_cpl_o),
 
 	// decoder
 	.NAK_scheduled_i(NAK_scheduled),
