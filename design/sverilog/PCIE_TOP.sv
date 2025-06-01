@@ -143,6 +143,7 @@ TL_TOP #(
     .cl_nh_i                      (ep_cl_np_h_o),               // input [11:0]
     .cl_ch_i                      (ep_cl_cpl_h_o),              // input [11:0]
     .cl_cd_i                      (ep_cl_cpl_d_o),              // input [11:0]
+    .cl_en_i                      (ep_cl_en_o),
 
     // Rx Credit Consumed
     .cc_ph_o                      (cc_p_h_o),                   // output [11:0]
@@ -156,10 +157,7 @@ TL_TOP #(
     .updatefc_cpl_i               (updatefc_cpl_o),
 
     // Retry Monitor
-    .retry_buffer_leftover_cnt_i (retry_buffer_leftover_cnt_w),  // output [RETRY_DEPTH_LG2-1:0]
-
-    // Link Active
-    .link_active_i                (ep_cl_en_o)                 // input
+    .retry_buffer_leftover_cnt_i (retry_buffer_leftover_cnt_w)  // output [RETRY_DEPTH_LG2-1:0]
 );
 
 
