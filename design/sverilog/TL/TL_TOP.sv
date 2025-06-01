@@ -131,13 +131,13 @@ module TL_TOP #(
 
 
     TL_AXI_MASTER #(
-        .ID_WIDTH                    (4),
-        .ADDR_WIDTH                  (64),
-        .MAX_READ_REQ_SIZE           (512),
-        .MAX_PAYLOAD_SIZE            (128),
-        .READ_COMPLETION_BOUNDARY    (128),
-        .RX_DEPTH_LG2                (6),
-        .TX_DEPTH_LG2                (6)
+        .ID_WIDTH                    (ID_WIDTH),
+        .ADDR_WIDTH                  (ADDR_WIDTH),
+        .MAX_READ_REQ_SIZE           (MAX_READ_REQ_SIZE),
+        .MAX_PAYLOAD_SIZE            (MAX_PAYLOAD_SIZE),
+        .READ_COMPLETION_BOUNDARY    (READ_COMPLETION_BOUNDARY),
+        .RX_DEPTH_LG2                (RX_DEPTH_LG2),
+        .TX_DEPTH_LG2                (TX_DEPTH_LG2)
     ) u_tl_axi_master (
         .clk                         (clk),
         .rst_n                       (rst_n),
@@ -184,13 +184,13 @@ module TL_TOP #(
     );
 
     TL_AXI_SLAVE #(
-        .AXI_ID_WIDTH                (4),
-        .AXI_ADDR_WIDTH              (64),
-        .MAX_READ_REQ_SIZE           (512),
-        .MAX_PAYLOAD_SIZE            (128),
-        .READ_COMPLETION_BOUNDARY    (128),
-        .RX_DEPTH_LG2                (4),
-        .TX_DEPTH_LG2                (3)
+        .AXI_ID_WIDTH                (AXI_ID_WIDTH),
+        .AXI_ADDR_WIDTH              (AXI_ADDR_WIDTH),
+        .MAX_READ_REQ_SIZE           (MAX_READ_REQ_SIZE),
+        .MAX_PAYLOAD_SIZE            (MAX_PAYLOAD_SIZE),
+        .READ_COMPLETION_BOUNDARY    (READ_COMPLETION_BOUNDARY),
+        .RX_DEPTH_LG2                (RX_DEPTH_LG2),
+        .TX_DEPTH_LG2                (TX_DEPTH_LG2)
     ) u_tl_axi_slave (
         .clk                         (clk),
         .rst_n                       (rst_n),
