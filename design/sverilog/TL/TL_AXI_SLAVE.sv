@@ -116,15 +116,7 @@ module TL_AXI_SLAVE #(
     assign b_if.bid = 4'd0;
     assign b_if.bvalid = 1'b1; // Always Valid
     assign b_if.bresp = 2'b00; // Fix to 0 (Okay)
-
-    TL_CNT #(.DEPTH(TX_DEPTH_LG2)) p_payload_cnt (
-        .clk        (clk),
-        .rst_n      (rst_n),
-        .wren_i     (w_if.wvalid & w_if.wlast & ~p_data_full),
-        .rden_i     (p_sent_i),
-        .cnt_o      (p_payload_cnt_o)
-    );
-
+    
     // ************ Memory Read Packer ************
 
     // AXI Burst Transfer Control
@@ -134,22 +126,7 @@ module TL_AXI_SLAVE #(
     // Tag Allocator Handshake
     logic tag_allocate; // input set by above
 
-    always_comb begin : ar_to_memrd_req
-        arready = 1'b0;
-        np_hdr_wren = 1'b0;
-        tag_allocate = 1'b0;
-
-        if (~np_hdr_full & tag_valid) begin
-            arready = 1'b1;
-        end
-
-        if (ar_if.avalid & arready) begin
-            np_hdr_wren = 1'b1;
-            tag_allocate = 1'b1;
-        end
-    end
-
-    assign ar_if.aready = arready;
+    // *** Memory Read Packer ... Completion ***
 
     typedef enum logic [1:0] {
         IDLE,
@@ -170,6 +147,69 @@ module TL_AXI_SLAVE #(
     logic tag_free;
     logic cpl_hdr_rden;
     logic cpl_data_rden;
+
+    assign ar_if.aready = arready;
+
+    assign r_if.rid = rid;
+    assign r_if.rvalid = rvalid;
+    assign r_if.rlast = rlast;
+    assign r_if.rresp = 2'b00; // Fix to 0 (Okay)
+
+    assign cpl_hdr_rden_o = cpl_hdr_rden;
+    assign cpl_data_rden_o = cpl_data_rden;
+    
+    // **************** Tag Allocator ****************
+
+    logic [TAG_WIDTH-1:0] tag_pool;
+    logic [TAG_BIT-1:0] tag_counter;
+    wire tag_valid;
+    assign tag_valid = !tag_pool[tag_counter];
+    // tag_pool[i]: 0 (Valid) / 1 (Not Valid)
+    // logic tag_allocate; // input set by above
+    // logic tag_free;
+    // logic [TAG_BIT-1:0] tag_completion;
+
+
+    // ******************** Header Set ********************
+    PCIE_PKG::tlp_memory_req_hdr_t p_hdr;
+    logic [9:0]     memwr_length;
+    logic [9:0]     memwr_tag;
+
+    PCIE_PKG::tlp_memory_req_hdr_t np_hdr;
+    logic [9:0]     memrd_length;
+    logic [9:0]     memrd_tag;
+
+    PCIE_PKG::tlp_cpl_hdr_t cpl_hdr;
+
+    // *** Write Packer - Posted Payload Counter ***
+
+    TL_CNT #(.DEPTH(TX_DEPTH_LG2)) p_payload_cnt (
+        .clk        (clk),
+        .rst_n      (rst_n),
+        .wren_i     (w_if.wvalid & w_if.wlast & ~p_data_full),
+        .rden_i     (p_sent_i),
+        .cnt_o      (p_payload_cnt_o)
+    );
+
+    // *** AR to Memory Read Request Packer ***
+
+    always_comb begin : ar_to_memrd_req
+        arready = 1'b0;
+        np_hdr_wren = 1'b0;
+        tag_allocate = 1'b0;
+
+        if (~np_hdr_full & tag_valid) begin
+            arready = 1'b1;
+        end
+
+        if (ar_if.avalid & arready) begin
+            np_hdr_wren = 1'b1;
+            tag_allocate = 1'b1;
+        end
+    end
+
+
+    // *** FSM - Completion to R Channel ***
 
     always_ff @(posedge clk)
         if (!rst_n) begin
@@ -238,24 +278,7 @@ module TL_AXI_SLAVE #(
         endcase
     end
 
-    assign r_if.rid = rid;
-    assign r_if.rvalid = rvalid;
-    assign r_if.rlast = rlast;
-    assign r_if.rresp = 2'b00; // Fix to 0 (Okay)
-
-    assign cpl_hdr_rden_o = cpl_hdr_rden;
-    assign cpl_data_rden_o = cpl_data_rden;
-
-    // **************** Tag Allocator ****************
-
-    logic [TAG_WIDTH-1:0] tag_pool;
-    logic [TAG_BIT-1:0] tag_counter;
-    wire tag_valid;
-    assign tag_valid = !tag_pool[tag_counter];
-    // tag_pool[i]: 0 (Valid) / 1 (Not Valid)
-    // logic tag_allocate; // input set by above
-    // logic tag_free;
-    // logic [TAG_BIT-1:0] tag_completion;
+    // *** FSM - Tag Allocater ***
 
     always_ff @(posedge clk)
         if (!rst_n) begin
@@ -271,11 +294,8 @@ module TL_AXI_SLAVE #(
                 tag_counter <= tag_counter + 'b1;
             end
         end
-
-    // ******************** Header Set ********************
-    PCIE_PKG::tlp_memory_req_hdr_t p_hdr;
-    logic [9:0]     memwr_length;
-    logic [9:0]     memwr_tag;
+    
+    // *** Header Sets ***
 
     always_comb begin : gen_memwr_hdr
         // aw_if.asize: 5, 2^5 = 32B, 8DW
@@ -309,10 +329,6 @@ module TL_AXI_SLAVE #(
         p_hdr.tlp_type      = 5'b00000; // Memory Read/Write Request
     end
 
-    PCIE_PKG::tlp_memory_req_hdr_t np_hdr;
-    logic [9:0]     memrd_length;
-    logic [9:0]     memrd_tag;
-
     always_comb begin : gen_memrd_hdr
         // aw_if.asize: 5, 2^5 = 32B, 8DW
         memrd_length = (ar_if.alen + 1) << 3;
@@ -345,7 +361,7 @@ module TL_AXI_SLAVE #(
         np_hdr.tlp_type     = 5'b00000; // Memory Read/Write Request
     end
 
-    PCIE_PKG::tlp_cpl_hdr_t cpl_hdr;
+    // *** FIFO Sets ***
 
     // P Header FIFO
     TL_FIFO #(

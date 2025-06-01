@@ -102,19 +102,37 @@ module PCIE_TOP_WRAPPER #
 );
     import PCIE_PKG::*;
 
-    // AXI Master
-    AXI4_A_IF aw_if_master;
-    AXI4_A_IF ar_if_master;
-    AXI4_W_IF w_if_master;
-    AXI4_R_IF r_if_master;
-    AXI4_B_IF b_if_master;
+    AXI4_A_IF #(
+        .ID_WIDTH(4), .ADDR_WIDTH(64)
+    ) aw_if_master ();
+    AXI4_A_IF #(
+        .ID_WIDTH(4), .ADDR_WIDTH(64)
+    ) ar_if_master ();
+    AXI4_W_IF #(
+        .ID_WIDTH(4), .DATA_WIDTH(256), .STRB_WIDTH(32)
+    ) w_if_master ();
+    AXI4_R_IF #(
+        .ID_WIDTH(4), .DATA_WIDTH(256)
+    ) r_if_master    ();
+    AXI4_B_IF #(
+        .ID_WIDTH(4)
+    ) b_if_master ();
 
-    // AXI Slave
-    AXI4_A_IF aw_if_slave;
-    AXI4_A_IF ar_if_slave;
-    AXI4_W_IF w_if_slave;
-    AXI4_R_IF r_if_slave;
-    AXI4_B_IF b_if_slave;
+    AXI4_A_IF #(
+        .ID_WIDTH(4), .ADDR_WIDTH(64)
+    ) aw_if_slave ();
+    AXI4_A_IF #(
+        .ID_WIDTH(4), .ADDR_WIDTH(64)
+    ) ar_if_slave ();
+    AXI4_W_IF #(
+        .ID_WIDTH(4), .DATA_WIDTH(256), .STRB_WIDTH(32)
+    ) w_if_slave ();
+    AXI4_R_IF #(
+        .ID_WIDTH(4), .DATA_WIDTH(256)
+    ) r_if_slave     ();
+    AXI4_B_IF #(
+        .ID_WIDTH(4)
+    ) b_if_slave ();
 
 
 
@@ -131,8 +149,8 @@ module PCIE_TOP_WRAPPER #
         .CREDIT_DEPTH               (12)
     ) u_pcie_top (
         .clk                        (clk),
-        .rst_n                      (rst_n),
-        .config_bdf_i               (config_bdf_i),
+        .rst_n                      (!rst),
+        .config_bdf_i               (16'h0000),
         .pipe_txdata                (pipe_txdata),
         .pipe_txvalid               (pipe_txvalid),
         .pipe_rxdata                (pipe_rxdata),
@@ -258,8 +276,4 @@ assign s_axi_rdata            = r_if_slave.rdata;
 assign s_axi_rresp            = r_if_slave.rresp;
 assign s_axi_rlast            = r_if_slave.rlast;
 
-
-
-    assign  pipe_txdata             = txdata;
-    assign  pipe_txvalid            = txvalid;
 endmodule

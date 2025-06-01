@@ -87,6 +87,8 @@ module TL_AXI_MASTER #(
     );
 */
 
+    // ***** Wires-Logics *****
+
     wire            p_hdr_empty;
     wire [31:0]     p_hdr_debug;
     wire            p_data_empty;
@@ -106,9 +108,9 @@ module TL_AXI_MASTER #(
     wire            ar_rden;
     wire [31:0]     ar_debug;
 
-    // **********************************
-    // * P Header / P Data -> AXI Write *
-    // **********************************
+
+
+
     PCIE_PKG::tlp_memory_req_hdr_t p_hdr;
 
     wire [7:0]                  p_hdr_awlen;
@@ -131,6 +133,60 @@ module TL_AXI_MASTER #(
     logic [ID_WIDTH-1:0] wid, wid_n;
     logic p_hdr_rden, p_data_rden;
     logic awvalid, wvalid, wlast, bready;
+
+
+
+
+    PCIE_PKG::tlp_memory_req_hdr_t np_hdr;
+    
+    wire [9:0]          np_hdr_length;
+    assign np_hdr_length = {np_hdr.length_h, np_hdr.length_l};
+    wire [63:0]         np_hdr_addr;
+    assign np_hdr_addr = {np_hdr.addr_h, np_hdr.addr_m, np_hdr.addr_l, 2'b00};
+    wire [9:0]          np_hdr_tag;
+    assign np_hdr_tag = {np_hdr.tg_h, np_hdr.tg_m, np_hdr.tag};
+    wire [15:0]         np_hdr_requester_id;
+    assign np_hdr_requester_id = np_hdr.requester_id;
+
+    typedef enum logic {
+        NP_READ,
+        CPL_GEN
+    } npstate_t;
+    npstate_t npstate, npstate_n;
+
+    logic np_hdr_rden;
+
+    // wire [9:0]          np_hdr_length;
+    // wire [63:0]         np_hdr_addr;
+    // wire [9:0]          np_hdr_tag;
+
+    logic   [11:0]  byte_count, byte_count_n;
+    logic   [15:0]  np_req_id, np_req_id_n;
+    logic   [9:0]   np_req_tag, np_req_tag_n;
+    logic   [ADDR_WIDTH-1:0]    araddr, araddr_n;
+    wire    [6:0]   lower_addr;
+    assign lower_addr = araddr[6:0];
+    logic   [7:0]               arlen, arlen_n;
+
+    logic   ar_wren;
+
+    logic   cpl_hdr_wren;
+
+
+
+
+    PCIE_PKG::tlp_cpl_hdr_t cpl_hdr;
+    logic   [9:0]   cpl_length;
+
+
+
+
+
+
+
+    // **********************************
+    // * P Header / P Data -> AXI Write *
+    // **********************************
 
     always_ff @(posedge clk)
         if (!rst_n) begin
@@ -208,45 +264,11 @@ module TL_AXI_MASTER #(
     assign b_if.bready = bready;
 
     assign p_hdr_rden_o = p_hdr_rden;
-    assign p_data_rden_o = p_hdr_data;
+    assign p_data_rden_o = p_data_rden;
 
     // **************************************************
     // * NP Header -> AXI Read -> Cpl Header / Cpl FIFO *
     // **************************************************
-    PCIE_PKG::tlp_memory_req_hdr_t np_hdr;
-    
-    wire [9:0]          np_hdr_length;
-    assign np_hdr_length = {np_hdr.length_h, np_hdr.length_l};
-    wire [63:0]         np_hdr_addr;
-    assign np_hdr_addr = {np_hdr.addr_h, np_hdr.addr_m, np_hdr.addr_l, 2'b00};
-    wire [9:0]          np_hdr_tag;
-    assign np_hdr_tag = {np_hdr.tg_h, np_hdr.tg_m, np_hdr.tag};
-    wire [15:0]         np_hdr_requester_id;
-    assign np_hdr_requester_id = np_hdr.requester_id;
-
-    typedef enum logic {
-        NP_READ,
-        CPL_GEN
-    } npstate_t;
-    npstate_t npstate, npstate_n;
-
-    logic np_hdr_rden;
-
-    // wire [9:0]          np_hdr_length;
-    // wire [63:0]         np_hdr_addr;
-    // wire [9:0]          np_hdr_tag;
-
-    wire    [6:0]   lower_addr;
-    assign lower_addr = araddr[6:0];
-    logic   [11:0]  byte_count, byte_count_n;
-    logic   [15:0]  np_req_id, np_req_id_n;
-    logic   [9:0]   np_req_tag, np_req_tag_n;
-    logic   [ADDR_WIDTH-1:0]    araddr, araddr_n;
-    logic   [7:0]               arlen, arlen_n;
-
-    logic   ar_wren;
-
-    logic   cpl_hdr_wren;
     
     always_ff @(posedge clk)
         if (!rst_n) begin
@@ -376,9 +398,6 @@ module TL_AXI_MASTER #(
         .cnt_o      (cpl_payload_cnt_o)
     );
     
-    PCIE_PKG::tlp_cpl_hdr_t cpl_hdr;
-
-    logic   [9:0]   cpl_length;
     
     always_comb begin : gen_cpl_hdr
         cpl_length = (arlen + 'd1) << 3;
