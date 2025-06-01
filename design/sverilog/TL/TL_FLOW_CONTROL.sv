@@ -83,8 +83,15 @@ module TL_FLOW_CONTROL #(
     input  wire             link_active_i
 );
 
-    localparam      HEADER_MARGIN = 1 + 1; // 1 header unit, 1 for calc.
-    localparam      DATA_MARGIN = 4; // 32B unit
+    typedef enum logic [2:0] {
+        IDLE,
+        P_HDR,      P_DATA,
+        NP_HDR,     RESERVED,
+        CPL_HDR,    CPL_DATA,
+        DONE
+    } req_t;
+    req_t fstate, fstate_n;
+    assign req_o = fstate;
 
     logic np_hdr_rden, p_hdr_rden, cpl_hdr_rden;
     logic p_data_rden, cpl_data_rden;
@@ -101,8 +108,6 @@ module TL_FLOW_CONTROL #(
     assign cpl_sent_o = cpl_sent;
     assign p_sent_o = p_sent;
     
-    req_t fstate, fstate_n;
-    assign req_o = fstate;
     logic   [2:0]   pcnt, pcnt_n; // payload count
 
     PCIE_PKG::tlp_cpl_hdr_t cpl_hdr;
@@ -113,14 +118,6 @@ module TL_FLOW_CONTROL #(
     wire [9:0] cpl_hdr_length, p_hdr_length;
     assign p_hdr_length = {p_hdr.length_h, p_hdr.length_l};
     assign cpl_hdr_length = {cpl_hdr.length_h, cpl_hdr.length_l};
-
-    typedef enum logic [2:0] {
-        IDLE,
-        P_HDR,      P_DATA,
-        NP_HDR,     RESERVED,
-        CPL_HDR,    CPL_DATA,
-        DONE
-    } req_t;
 
     logic [11:0]    ph_limit, pd_limit, nh_limit, ch_limit, cd_limit;
     logic [11:0]    ph_consumed, nh_consumed, ch_consumed;
