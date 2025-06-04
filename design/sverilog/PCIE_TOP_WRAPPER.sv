@@ -103,35 +103,35 @@ module PCIE_TOP_WRAPPER #
     import PCIE_PKG::*;
 
     AXI4_A_IF #(
-        .ID_WIDTH(4), .ADDR_WIDTH(64)
+        .ID_WIDTH(6), .ADDR_WIDTH(64)
     ) aw_if_master ();
     AXI4_A_IF #(
-        .ID_WIDTH(4), .ADDR_WIDTH(64)
+        .ID_WIDTH(6), .ADDR_WIDTH(64)
     ) ar_if_master ();
     AXI4_W_IF #(
-        .ID_WIDTH(4), .DATA_WIDTH(256), .STRB_WIDTH(32)
+        .ID_WIDTH(6), .DATA_WIDTH(256), .STRB_WIDTH(32)
     ) w_if_master ();
     AXI4_R_IF #(
-        .ID_WIDTH(4), .DATA_WIDTH(256)
+        .ID_WIDTH(6), .DATA_WIDTH(256)
     ) r_if_master    ();
     AXI4_B_IF #(
-        .ID_WIDTH(4)
+        .ID_WIDTH(6)
     ) b_if_master ();
 
     AXI4_A_IF #(
-        .ID_WIDTH(4), .ADDR_WIDTH(64)
+        .ID_WIDTH(6), .ADDR_WIDTH(64)
     ) aw_if_slave ();
     AXI4_A_IF #(
-        .ID_WIDTH(4), .ADDR_WIDTH(64)
+        .ID_WIDTH(6), .ADDR_WIDTH(64)
     ) ar_if_slave ();
     AXI4_W_IF #(
-        .ID_WIDTH(4), .DATA_WIDTH(256), .STRB_WIDTH(32)
+        .ID_WIDTH(6), .DATA_WIDTH(256), .STRB_WIDTH(32)
     ) w_if_slave ();
     AXI4_R_IF #(
-        .ID_WIDTH(4), .DATA_WIDTH(256)
+        .ID_WIDTH(6), .DATA_WIDTH(256)
     ) r_if_slave     ();
     AXI4_B_IF #(
-        .ID_WIDTH(4)
+        .ID_WIDTH(6)
     ) b_if_slave ();
 
 
