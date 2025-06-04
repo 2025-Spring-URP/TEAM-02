@@ -66,34 +66,10 @@ set clk_period [expr 1000 / double($clk_freq)]
 set clk_period [expr $clk_period * $derating]
 
 
-set clk_name cclk
-create_clock -period $clk_period $clk_name
-# Set infinite drive strength
-set_drive 0 $clk_name
-
-set clk_name pclk
-create_clock -period $clk_period $clk_name
-# Set infinite drive strength
-set_drive 0 $clk_name
-
-set clk_name aclk
-create_clock -period $clk_period $clk_name
-# Set infinite drive strength
-set_drive 0 $clk_name
-
 set clk_name clk
 create_clock -period $clk_period $clk_name
 # Set infinite drive strength
 set_drive 0 $clk_name
-
-set rst_name creset_n
-set_ideal_network $rst_name
-
-set rst_name preset_n
-set_ideal_network $rst_name
-
-set rst_name areset_n
-set_ideal_network $rst_name
 
 set rst_name rst
 set_ideal_network $rst_name
