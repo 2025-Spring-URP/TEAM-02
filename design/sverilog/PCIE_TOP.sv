@@ -55,7 +55,7 @@ typedef enum logic [2:0] {
 } req_t;
 
 
-wire [RETRY_DEPTH_LG2-1:0]         retry_buffer_leftover_cnt_w;
+wire [RETRY_DEPTH_LG2+2:0]         retry_buffer_leftover_cnt_w;
 wire [PIPE_DATA_WIDTH-1:0]         tl2dll_data_w;
 req_t                              tl2dll_data_en_w;
 wire [PIPE_DATA_WIDTH-1:0]         dll2tl_data_w;
