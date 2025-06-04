@@ -104,10 +104,13 @@ end
 
 wire [PIPE_DATA_WIDTH/8-1:0]    dllp_data_w_packed[8];
 
-for(int i=0; i<8; i++) begin
-    assign dllp_data_w_packed[i]    = dllp_data_w[i*32 +: 32];
-end
+generate
+    for(genvar k=0; k<8; k++) begin : gen_assign_dllp_w
+	    assign dllp_data_w_packed[k]       = dllp_data_w[k*32 +: 32];
+    end
+endgenerate
 
+	
 DLL_WR #(
     .PIPE_DATA_WIDTH                    (PIPE_DATA_WIDTH),             // 필요시 다른 값으로 수정
     .RETRY_DEPTH_LG2                    (RETRY_DEPTH_LG2),
