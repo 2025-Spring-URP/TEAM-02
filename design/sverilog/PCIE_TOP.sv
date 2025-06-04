@@ -85,7 +85,7 @@ wire [CREDIT_DEPTH-1:0]            ep_cl_p_d_o;             // Endpoint Posted d
 wire [CREDIT_DEPTH-1:0]            ep_cl_np_h_o;            // Endpoint Non-posted header credit limit
 wire [CREDIT_DEPTH-1:0]            ep_cl_cpl_h_o;           // Endpoint Completion header credit limit
 wire [CREDIT_DEPTH-1:0]            ep_cl_cpl_d_o;           // Endpoint Completion data credit limit
-wire [2:0]                         ep_cl_en_o;              // Endpoint credit limit enable
+wire                               ep_cl_en_o;              // Endpoint credit limit enable
 
 wire updatefc_p_o;
 wire updatefc_np_o;
