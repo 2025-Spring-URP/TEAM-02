@@ -22,7 +22,7 @@ module DLL_Decoder
     //                    DLLP generator
     // -------------------------------------------------------
     output  wire                                    NAK_scheduled_o, // tlp 뜯어봤는데 지금 들어온 tlp의 seq가 next_rcv_seq랑 달라서 nak 떴다고 알림
-    output  wire      [15:0]                        next_rcv_seq_o,  // 지금까지 잘 받은거 + 1
+    output  wire      [11:0]                        next_rcv_seq_o,  // 지금까지 잘 받은거 + 1
 
     // -------------------------------------------------------
     //                    retry monitor
@@ -288,7 +288,7 @@ reg [10:0] cnt, cnt_n;
 reg [10:0] wcnt, wcnt_n;
 reg [2:0]  tlp_state, tlp_state_n;
 
-reg [15:0] next_rcv_seq, next_rcv_seq_n;
+reg [11:0] next_rcv_seq, next_rcv_seq_n;
 reg NAK_scheduled, NAK_scheduled_n;
 
 reg     [PIPE_DATA_WIDTH-1:0]          dll2tl_data, dll2tl_data_n;
