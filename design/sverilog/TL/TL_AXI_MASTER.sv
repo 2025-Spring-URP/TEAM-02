@@ -118,9 +118,19 @@ module TL_AXI_MASTER #(
     wire [9:0]     p_hdr_tag;
     assign p_hdr_tag = {p_hdr.tg_h, p_hdr.tg_m, p_hdr.tag};
     wire [AXI_ID_WIDTH-1:0]     p_hdr_awid;
-    assign p_hdr_awid = p_hdr_tag[9:6];
+    assign p_hdr_awid = 'd0; // p_hdr_tag[9:6];
     wire [AXI_ADDR_WIDTH-1:0]       p_hdr_awaddr;
-    assign p_hdr_awaddr = {p_hdr.addr_h, p_hdr.addr_m, p_hdr.addr_l, 2'b00};
+    assign p_hdr_awaddr = {
+        p_hdr.addr_h[7:0],     // address[63:56]
+        p_hdr.addr_h[15:8],    // address[55:48]
+        p_hdr.addr_h[23:16],   // address[47:40]
+        p_hdr.addr_h[31:24],   // address[39:32]
+        p_hdr.addr_m[7:0],     // address[31:24]
+        p_hdr.addr_m[15:8],    // address[23:16]
+        p_hdr.addr_m[23:16],   // address[15:8]
+        p_hdr.addr_l,          // address[7:2]
+        2'b00                   // address[1:0] = 0
+    };
     
     typedef enum logic {
         HEADER,
@@ -134,15 +144,23 @@ module TL_AXI_MASTER #(
     logic p_hdr_rden, p_data_rden;
     logic awvalid, wvalid, wlast, bready;
 
-
-
-
     PCIE_PKG::tlp_memory_req_hdr_t np_hdr;
     
     wire [9:0]          np_hdr_length;
     assign np_hdr_length = {np_hdr.length_h, np_hdr.length_l};
     wire [63:0]         np_hdr_addr;
-    assign np_hdr_addr = {np_hdr.addr_h, np_hdr.addr_m, np_hdr.addr_l, 2'b00};
+    assign np_hdr_addr = {
+        np_hdr.addr_h[7:0],     // address[63:56]
+        np_hdr.addr_h[15:8],    // address[55:48]
+        np_hdr.addr_h[23:16],   // address[47:40]
+        np_hdr.addr_h[31:24],   // address[39:32]
+        np_hdr.addr_m[7:0],     // address[31:24]
+        np_hdr.addr_m[15:8],    // address[23:16]
+        np_hdr.addr_m[23:16],   // address[15:8]
+        np_hdr.addr_l,          // address[7:2]
+        2'b00                   // address[1:0] = 0
+    };
+
     wire [9:0]          np_hdr_tag;
     assign np_hdr_tag = {np_hdr.tg_h, np_hdr.tg_m, np_hdr.tag};
     wire [15:0]         np_hdr_requester_id;
@@ -312,15 +330,15 @@ module TL_AXI_MASTER #(
                 np_req_id_n = np_hdr_requester_id;
                 np_req_tag_n = np_hdr_tag;
 
-                if (|np_hdr_addr[6:5]) begin // if not RCB start (max beat < 4)
-                    arlen_n = (np_hdr_length[7:3] < 'd4 - np_hdr_addr[6:5]) ? // length less than 128-addr[6:0]?
-                              {6'd0, (np_hdr_length[4:3] - 'd1)} : // ARLEN set by (length << 3) - 1
-                              {6'd0, ('d3 - np_hdr_addr[6:5])}; // ARLEN set by (128-addr[6:0])
+                if (np_hdr_addr[6:0] != 7'd0) begin // if not RCB start (max beat < 4)
+                    arlen_n = ((np_hdr_length >> 3) + np_hdr_addr[6:5] > 'd4) ? // length less than 128-addr[6:0]?
+                              8'('d4 - 'd1 - np_hdr_addr[6:5]) : // ARLEN set by (128-addr[6:0])
+                              ((np_hdr_length >> 3) - 'd1); // ARLEN set by (length >> 3) - 1
                 end
                 else begin // if RCB start (max beat 4)
-                    arlen_n = (np_hdr_length[7:5] < 'd1) ? // length less than 128B?
-                              {6'd0, (np_hdr_length[4:3] - 'd1)} : // ARLEN set by (length << 3) - 1
-                              8'd3; // ARLEN set by 4-beat
+                    arlen_n = (np_hdr_length[9:5] != 5'd0) ? // length greater than 128B?
+                              8'd3 : // ARLEN set by 4-beat (128B read)
+                              ((np_hdr_length >> 3) - 'd1); // ARLEN set by (length >> 3) - 1
                 end
             end
         end
@@ -333,18 +351,11 @@ module TL_AXI_MASTER #(
 
                 araddr_n = araddr + ((arlen + 8'd1) << 5);
                 
-                if (|araddr[6:5]) begin // if not RCB start (max beat < 4)
-                    arlen_n = (byte_count[9:5] < 'd4 - araddr[6:5]) ? // length less than 128-addr[6:0]?
-                              {6'd0, (byte_count[6:5] - 'd1)} : // ARLEN set by (length << 3) - 1
-                              {6'd0, ('d3 - araddr[6:5])}; // ARLEN set by (128-addr[6:0])
-                end
-                else begin // if RCB start (max beat 4)
-                    arlen_n = (byte_count[7:5] < 'd1) ? // length less than 128B?
-                              {6'd0, (byte_count[6:5] - 'd1)} : // ARLEN set by (length << 3) - 1
-                              8'd3; // ARLEN set by 4-beat
-                end
+                arlen_n = (byte_count_n[11:7] == 'd0 && byte_count_n[6:5] != 2'd0) ? // if next byte count less than 128B
+                          ((byte_count_n >> 5) - 'd1): // ARLEN set by (length << 3) - 1
+                          8'd3; // ARLEN set by 4-beat (128B read)
 
-                if (byte_count == ((arlen + 1) << 5)) begin
+                if (byte_count[11:7] == 'd0) begin
                     npstate_n = NP_READ;
                 end
             end
@@ -373,7 +384,7 @@ module TL_AXI_MASTER #(
         .debug_o       (ar_debug)
     );
 
-    assign ar_wdata = {araddr, np_req_tag[9:6], arlen};
+    assign ar_wdata = {araddr, {AXI_ID_WIDTH{1'b0}}, arlen}; // np_req_tag[9:6]
 
     assign ar_if.avalid = !ar_empty;
     assign ar_if.aid = ar_rdata[AXI_ID_WIDTH+8-1:8];
