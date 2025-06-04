@@ -102,8 +102,11 @@ always_comb begin
     endcase
 end
 
+wire [PIPE_DATA_WIDTH/8-1:0]    dllp_data_w_packed[8];
 
-
+for(int i=0; i<8; i++) begin
+    assign dllp_data_w_packed[i]    = dllp_data_w[i*32 +: 32];
+end
 
 DLL_WR #(
     .PIPE_DATA_WIDTH                    (PIPE_DATA_WIDTH),             // 필요시 다른 값으로 수정
@@ -120,7 +123,7 @@ DLL_WR #(
 
     // DLL_RD
     .DLCMSM_i                           (DLCMSM_w), // input [1:0]
-    .data_DLLP_i                        (dllp_data_w),
+    .data_DLLP_i                        (dllp_data_w_packed),
     .DLLP_valid_i                       (dllp_valid_w),
     .DLLP_ready_o                       (dllp_ready_w),
     .acknak_seq_num_i                   (acknak_seq_num_w),
