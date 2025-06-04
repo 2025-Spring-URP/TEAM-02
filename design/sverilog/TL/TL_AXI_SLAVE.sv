@@ -111,10 +111,21 @@ module TL_AXI_SLAVE #(
     wire            cpl_data_empty;
     wire [31:0]     cpl_data_debug;
 
+    logic [AXI_ID_WIDTH-1:0] bid, bid_n;
+    logic           bvalid;
+
     // ************ Memory Write Packer ************
 
-    assign b_if.bid = 4'd0;
-    assign b_if.bvalid = 1'b1; // Always Valid
+    typedef enum logic [1:0] {
+        WREQ,
+        WDATA,
+        WRESP
+    } wstate_t;
+    
+    wstate_t wstate, wstate_n;
+
+    assign b_if.bid = bid;
+    assign b_if.bvalid = bvalid; // Always Valid
     assign b_if.bresp = 2'b00; // Fix to 0 (Okay)
     
     // ************ Memory Read Packer ************
@@ -157,6 +168,50 @@ module TL_AXI_SLAVE #(
 
     assign cpl_hdr_rden_o = cpl_hdr_rden;
     assign cpl_data_rden_o = cpl_data_rden;
+
+
+
+    // *** FSM - Write Response ***
+
+    always_ff @(posedge clk)
+        if (!rst_n) begin
+            wstate <= WREQ;
+            bid <= 'd0;
+        end
+        else begin
+            wstate <= wstate_n;
+            bid <= bid_n;
+        end
+
+    always_comb begin : write_resp
+        wstate_n = wstate;
+        bid_n = bid;
+        
+        bvalid = 1'b0;
+
+        case (wstate)
+        WREQ: begin
+            if (p_hdr_wren) begin
+                wstate_n = WDATA;
+                bid_n = aw_if.aid;
+            end
+        end
+        WDATA: begin
+            if (p_data_wren & w_if.wlast) begin
+                wstate_n = WRESP;
+            end
+        end
+        WRESP: begin
+            bvalid = 1'b1;
+
+            if (b_if.bready) begin
+                wstate_n = WREQ;
+            end
+        end
+        endcase
+    end
+
+
     
     // **************** Tag Allocator ****************
 
@@ -385,8 +440,8 @@ module TL_AXI_SLAVE #(
         .debug_o       (p_hdr_debug)
     );
 
-    assign aw_if.aready = !p_hdr_full;
-    assign p_hdr_wren = aw_if.avalid & ~p_hdr_full;
+    assign aw_if.aready = ~p_hdr_full & (wstate == WREQ);
+    assign p_hdr_wren = aw_if.avalid & ~p_hdr_full & (wstate == WREQ);
 
     // P Data FIFO
     TL_FIFO #(
@@ -410,8 +465,8 @@ module TL_AXI_SLAVE #(
         .debug_o       (p_data_debug)
     );
 
-    assign w_if.wready = !p_data_full;
-    assign p_data_wren = w_if.wvalid & ~p_data_full;
+    assign w_if.wready = !p_data_full & (wstate == WDATA);
+    assign p_data_wren = w_if.wvalid & ~p_data_full & (wstate == WDATA);
 
     // NP Header FIFO
     TL_FIFO #(
