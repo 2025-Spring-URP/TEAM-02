@@ -355,7 +355,7 @@ module TL_AXI_MASTER #(
                           ((byte_count_n >> 5) - 'd1): // ARLEN set by (length << 3) - 1
                           8'd3; // ARLEN set by 4-beat (128B read)
 
-                if (byte_count[11:7] == 'd0) begin
+                if (byte_count <= 'd128) begin
                     npstate_n = NP_READ;
                 end
             end
