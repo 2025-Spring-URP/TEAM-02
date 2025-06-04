@@ -84,11 +84,14 @@ module TL_FLOW_CONTROL #(
 );
 
     typedef enum logic [2:0] {
-        IDLE,
-        P_HDR,      P_DATA,
-        NP_HDR,     RESERVED,
-        CPL_HDR,    CPL_DATA,
-        DONE
+        IDLE,       // 0
+        P_HDR,      // 1
+        P_DATA,     // 2
+        NP_HDR,     // 3
+        RESERVED,   // 4
+        CPL_HDR,    // 5
+        CPL_DATA,   // 6
+        DONE        // 7
     } req_t;
     req_t fstate, fstate_n;
     assign req_o = fstate;
@@ -138,11 +141,11 @@ module TL_FLOW_CONTROL #(
 
     always_ff @(posedge clk)
         if (!rst_n) begin
-            ph_limit <= 'd0;
-            pd_limit <= 'd0;
-            nh_limit <= 'd0;
-            ch_limit <= 'd0;
-            cd_limit <= 'd0;
+            ph_limit <= 'd1024;
+            pd_limit <= 'd1024;
+            nh_limit <= 'd1024;
+            ch_limit <= 'd1024;
+            cd_limit <= 'd1024;
         end
         else if (cl_en_i) begin
             ph_limit <= cl_ph_i;
@@ -287,6 +290,8 @@ module TL_FLOW_CONTROL #(
             end
         end
         DONE: begin
+            fstate_n = IDLE;
+            
             if (~cpl_hdr_empty_i & link_active_i) begin
                 if (
                     'd1 < ch_available &
