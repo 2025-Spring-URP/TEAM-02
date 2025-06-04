@@ -177,51 +177,51 @@ module PCIE_TOP_WRAPPER #
 //----------------------------------------------------------------------------//
 
 // AW channel
-assign aw_if_master.avalid    = m_axi_awvalid;
-assign m_axi_awready          = aw_if_master.aready;
-assign aw_if_master.aid       = m_axi_awid;
-assign aw_if_master.aaddr     = m_axi_awaddr;
-assign aw_if_master.alen      = m_axi_awlen;
-assign aw_if_master.asize     = m_axi_awsize;
-assign aw_if_master.aburst    = m_axi_awburst;
-assign aw_if_master.acache    = m_axi_awcache;
-assign aw_if_master.aprot     = m_axi_awprot;
-assign aw_if_master.aqos      = m_axi_awqos;
-assign aw_if_master.aregion   = m_axi_awregion;
+assign aw_if_master.avalid  = m_axi_awvalid;   // OUTPUT → INPUT
+assign aw_if_master.aready  = m_axi_awready;   // INPUT  ← INPUT
+assign aw_if_master.aid     = m_axi_awid;
+assign aw_if_master.aaddr   = m_axi_awaddr;
+assign aw_if_master.alen    = m_axi_awlen;
+assign aw_if_master.asize   = m_axi_awsize;
+assign aw_if_master.aburst  = m_axi_awburst;
+assign aw_if_master.acache  = m_axi_awcache;
+assign aw_if_master.aprot   = m_axi_awprot;
+assign aw_if_master.aqos    = m_axi_awqos;
+assign aw_if_master.aregion = m_axi_awregion;
 
 // W channel
-assign w_if_master.wvalid     = m_axi_wvalid;
-assign m_axi_wready           = w_if_master.wready;
-assign w_if_master.wdata      = m_axi_wdata;
-assign w_if_master.wstrb      = m_axi_wstrb;
-assign w_if_master.wlast      = m_axi_wlast;
+assign w_if_master.wvalid   = m_axi_wvalid;    // OUTPUT → INPUT
+assign w_if_master.wready   = m_axi_wready;    // INPUT  ← INPUT
+assign w_if_master.wdata    = m_axi_wdata;
+assign w_if_master.wstrb    = m_axi_wstrb;
+assign w_if_master.wlast    = m_axi_wlast;
 
 // B channel
-assign m_axi_bid              = b_if_master.bid;
-assign m_axi_bresp            = b_if_master.bresp;
-assign m_axi_bvalid           = b_if_master.bvalid;
-assign b_if_master.bready     = m_axi_bready;
+assign b_if_master.bvalid   = m_axi_bvalid;    // INPUT  ← INPUT
+assign b_if_master.bid      = m_axi_bid;
+assign b_if_master.bresp    = m_axi_bresp;
+assign b_if_master.bready   = m_axi_bready;    // OUTPUT → OUTPUT
 
 // AR channel
-assign ar_if_master.avalid    = m_axi_arvalid;
-assign m_axi_arready          = ar_if_master.aready;
-assign ar_if_master.aid       = m_axi_arid;
-assign ar_if_master.aaddr     = m_axi_araddr;
-assign ar_if_master.alen      = m_axi_arlen;
-assign ar_if_master.asize     = m_axi_arsize;
-assign ar_if_master.aburst    = m_axi_arburst;
-assign ar_if_master.acache    = m_axi_arcache;
-assign ar_if_master.aprot     = m_axi_arprot;
-assign ar_if_master.aqos      = m_axi_arqos;
-assign ar_if_master.aregion   = m_axi_arregion;
+assign ar_if_master.avalid  = m_axi_arvalid;   // OUTPUT → INPUT
+assign ar_if_master.aready  = m_axi_arready;   // INPUT  ← INPUT
+assign ar_if_master.aid     = m_axi_arid;
+assign ar_if_master.aaddr   = m_axi_araddr;
+assign ar_if_master.alen    = m_axi_arlen;
+assign ar_if_master.asize   = m_axi_arsize;
+assign ar_if_master.aburst  = m_axi_arburst;
+assign ar_if_master.acache  = m_axi_arcache;
+assign ar_if_master.aprot   = m_axi_arprot;
+assign ar_if_master.aqos    = m_axi_arqos;
+assign ar_if_master.aregion = m_axi_arregion;
 
 // R channel
-assign m_axi_rvalid           = r_if_master.rvalid;
-assign r_if_master.rready     = m_axi_rready;
-assign m_axi_rid              = r_if_master.rid;
-assign m_axi_rdata            = r_if_master.rdata;
-assign m_axi_rresp            = r_if_master.rresp;
-assign m_axi_rlast            = r_if_master.rlast;
+assign r_if_master.rvalid   = m_axi_rvalid;    // INPUT  ← INPUT
+assign r_if_master.rready   = m_axi_rready;    // OUTPUT → OUTPUT
+assign r_if_master.rid      = m_axi_rid;
+assign r_if_master.rdata    = m_axi_rdata;
+assign r_if_master.rresp    = m_axi_rresp;
+assign r_if_master.rlast    = m_axi_rlast;
 
 
 //----------------------------------------------------------------------------//
@@ -230,50 +230,50 @@ assign m_axi_rlast            = r_if_master.rlast;
 //----------------------------------------------------------------------------//
 
 // AW channel (slave receives, so direction reversed)
-assign aw_if_slave.avalid     = s_axi_awvalid;
-assign s_axi_awready          = aw_if_slave.aready;
-assign aw_if_slave.aid        = s_axi_awid;
-assign aw_if_slave.aaddr      = s_axi_awaddr;
-assign aw_if_slave.alen       = s_axi_awlen;
-assign aw_if_slave.asize      = s_axi_awsize;
-assign aw_if_slave.aburst     = s_axi_awburst;
-assign aw_if_slave.acache     = s_axi_awcache;
-assign aw_if_slave.aprot      = s_axi_awprot;
-assign aw_if_slave.aqos       = s_axi_awqos;
-assign aw_if_slave.aregion    = s_axi_awregion;
+assign aw_if_slave.avalid   = s_axi_awvalid;   // INPUT  ← INPUT
+assign aw_if_slave.aready   = s_axi_awready;   // OUTPUT → OUTPUT
+assign aw_if_slave.aid      = s_axi_awid;
+assign aw_if_slave.aaddr    = s_axi_awaddr;
+assign aw_if_slave.alen     = s_axi_awlen;
+assign aw_if_slave.asize    = s_axi_awsize;
+assign aw_if_slave.aburst   = s_axi_awburst;
+assign aw_if_slave.acache   = s_axi_awcache;
+assign aw_if_slave.aprot    = s_axi_awprot;
+assign aw_if_slave.aqos     = s_axi_awqos;
+assign aw_if_slave.aregion  = s_axi_awregion;
 
 // W channel
-assign w_if_slave.wvalid      = s_axi_wvalid;
-assign s_axi_wready           = w_if_slave.wready;
-assign w_if_slave.wdata       = s_axi_wdata;
-assign w_if_slave.wstrb       = s_axi_wstrb;
-assign w_if_slave.wlast       = s_axi_wlast;
+assign w_if_slave.wvalid    = s_axi_wvalid;    // INPUT  ← INPUT
+assign w_if_slave.wready    = s_axi_wready;    // OUTPUT → OUTPUT
+assign w_if_slave.wdata     = s_axi_wdata;
+assign w_if_slave.wstrb     = s_axi_wstrb;
+assign w_if_slave.wlast     = s_axi_wlast;
 
 // B channel
-assign s_axi_bid              = b_if_slave.bid;
-assign s_axi_bresp            = b_if_slave.bresp;
-assign s_axi_bvalid           = b_if_slave.bvalid;
-assign b_if_slave.bready      = s_axi_bready;
+assign b_if_slave.bvalid    = s_axi_bvalid;    // OUTPUT → OUTPUT
+assign b_if_slave.bid       = s_axi_bid;
+assign b_if_slave.bresp     = s_axi_bresp;
+assign b_if_slave.bready    = s_axi_bready;    // INPUT  ← INPUT
 
 // AR channel
-assign ar_if_slave.avalid     = s_axi_arvalid;
-assign s_axi_arready          = ar_if_slave.aready;
-assign ar_if_slave.aid        = s_axi_arid;
-assign ar_if_slave.aaddr      = s_axi_araddr;
-assign ar_if_slave.alen       = s_axi_arlen;
-assign ar_if_slave.asize      = s_axi_arsize;
-assign ar_if_slave.aburst     = s_axi_arburst;
-assign ar_if_slave.acache     = s_axi_arcache;
-assign ar_if_slave.aprot      = s_axi_arprot;
-assign ar_if_slave.aqos       = s_axi_arqos;
-assign ar_if_slave.aregion    = s_axi_arregion;
+assign ar_if_slave.avalid   = s_axi_arvalid;   // INPUT  ← INPUT
+assign ar_if_slave.aready   = s_axi_arready;   // OUTPUT → OUTPUT
+assign ar_if_slave.aid      = s_axi_arid;
+assign ar_if_slave.aaddr    = s_axi_araddr;
+assign ar_if_slave.alen     = s_axi_arlen;
+assign ar_if_slave.asize    = s_axi_arsize;
+assign ar_if_slave.aburst   = s_axi_arburst;
+assign ar_if_slave.acache   = s_axi_arcache;
+assign ar_if_slave.aprot    = s_axi_arprot;
+assign ar_if_slave.aqos     = s_axi_arqos;
+assign ar_if_slave.aregion  = s_axi_arregion;
 
 // R channel
-assign s_axi_rvalid           = r_if_slave.rvalid;
-assign r_if_slave.rready      = s_axi_rready;
-assign s_axi_rid              = r_if_slave.rid;
-assign s_axi_rdata            = r_if_slave.rdata;
-assign s_axi_rresp            = r_if_slave.rresp;
-assign s_axi_rlast            = r_if_slave.rlast;
+assign r_if_slave.rvalid    = s_axi_rvalid;    // OUTPUT → OUTPUT
+assign r_if_slave.rready    = s_axi_rready;    // INPUT  ← INPUT
+assign r_if_slave.rid       = s_axi_rid;
+assign r_if_slave.rdata     = s_axi_rdata;
+assign r_if_slave.rresp     = s_axi_rresp;
+assign r_if_slave.rlast     = s_axi_rlast;
 
 endmodule
