@@ -68,7 +68,7 @@ wire [1:0]                              DLCMSM_w;
 wire                                    dllp_valid_w;
 wire [PIPE_DATA_WIDTH-1:0]              dllp_data_w;
 wire                                    dllp_ready_w;
-wire [1:0]                              acknak_seq_num_w; // 2 bits for ACK/NAK sequence number
+wire [15:0]                             acknak_seq_num_w; // 16 bits for ACK/NAK sequence number
 wire [1:0]                              acknak_seq_en_w;  // 2 bits for ACK/NAK sequence enable
 
 reg  [1:0]                              tl2dll_en_w;
